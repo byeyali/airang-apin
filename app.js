@@ -47,7 +47,7 @@ app.use("/locations", locationsRoutes);
 // DB 동기화 후 서버 시작
 console.log("📦 Sequelize: DB 동기화 시도 중...");
 db.sequelize
-  .sync({ alter: true }) // 첫 실행 시 alter:true 또는 force:true 사용 가능
+  .sync({ alter: false }) // 첫 실행 시 alter:true 또는 force:true 사용 가능
   .then(() => {
     console.log("✅ Sequelize: 테이블 동기화 완료");
     app.listen(port, () => {
