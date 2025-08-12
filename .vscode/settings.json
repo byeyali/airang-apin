@@ -1,0 +1,5 @@
+{
+  "appService.zipIgnorePattern": ["node_modules{,/**}", ".vscode{,/**}"],
+  "appService.defaultWebAppToDeploy": "/subscriptions/2ccd892a-1278-4364-a3af-f1a3dcab881d/resourceGroups/rg-truegrit/providers/Microsoft.Web/sites/airang-api",
+  "appService.deploySubpath": "."
+}
