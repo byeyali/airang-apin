@@ -1,29 +1,25 @@
-// 업로드 관련 미들웨어
 const multer = require("multer");
-const path = require("path");
-const uploadDir = process.env.UPLOAD_DIR || "public/uploads";
+const { MulterAzureStorage } = require("multer-azure-blob-storage");
+require("dotenv").config();
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "..", uploadDir));
+// Azure Storage 설정
+const azureStorage = new MulterAzureStorage({
+  connectionString: `DefaultEndpointsProtocol=https;AccountName=${process.env.AZURE_STORAGE_ACCOUNT_NAME};AccountKey=${process.env.AZURE_STORAGE_ACCOUNT_KEY};EndpointSuffix=core.windows.net`,
+  containerName: process.env.AZURE_CONTAINER_NAME,
+  blobName: (req, file) => {
+    return `${Date.now()}-${file.originalname}`;
   },
-  filename: function (req, file, cb) {
-    let originalName = Buffer.from(file.originalname, "latin1").toString(
-      "utf8"
-    );
-    const fname = originalName + "-" + Date.now() + path.extname(originalName);
-    cb(null, fname);
-  },
+  contentType: (req, file) => file.mimetype,
+  metadata: (req, file) => ({ fieldName: file.fieldname }),
 });
 
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
-  },
-});
-const uploadSingle = upload.single("photo");
-const uploadMultiple = upload.array("files", 5); // 최대 5개 파일까지 업로드 가능
+// multer 인스턴스 생성
+const upload = multer({ storage: azureStorage });
+
+// 단일파일 upload용, 다중파일 upload용
+const uploadSingle = upload.single("file"); // 단일 파일 (field name: "file")
+const uploadMultiple = upload.array("files", 10); // 다중 파일 (field name: "files", 최대 10개)
+
 module.exports = {
   uploadSingle,
   uploadMultiple,
