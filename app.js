@@ -4,11 +4,22 @@ require("dotenv").config(); // .env 환경변수 로드
 const express = require("express");
 const app = express();
 const cors = require("cors");
-// cors 모든 출처 허용 옵션
+// cors 허용
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://witty-sand-004399200.1.azurestaticapps.net",
+];
+
 app.use(
   cors({
-    origin: "http://localhost:3000", // 프론트엔드 주소를 명시적으로 설정
-    credentials: true,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, // 필요한 경우
   })
 );
 
