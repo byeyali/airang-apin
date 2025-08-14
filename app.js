@@ -4,7 +4,7 @@ require("dotenv").config(); // .env 환경변수 로드
 const express = require("express");
 const app = express();
 const cors = require("cors");
-// cors 허용
+// cors 설정
 const allowedOrigins = [
   "http://localhost:3000",
   "https://witty-sand-004399200.1.azurestaticapps.net",
