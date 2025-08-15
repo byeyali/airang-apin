@@ -5,21 +5,33 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 // cors 설정
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://witty-sand-004399200.1.azurestaticapps.net",
-];
+// const allowedOrigins = [
+//   "http://localhost:3000",
+//   "https://witty-sand-004399200.1.azurestaticapps.net",
+// ];
+
+// app.use(
+//   cors({
+//     origin: function (origin, callback) {
+//       if (!origin || allowedOrigins.includes(origin)) {
+//         callback(null, true);
+//       } else {
+//         callback(new Error("Not allowed by CORS"));
+//       }
+//     },
+//     credentials: true, // 필요한 경우
+//   })
+// );
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true, // 필요한 경우
+    origin: [
+      "http://localhost:3000",
+      "https://witty-sand-004399200.1.azurestaticapps.net",
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
