@@ -18,7 +18,7 @@ const createTutor = async (req, res) => {
     } = req.body;
 
     // tutor 사진 경로
-    const photo_path = req.file ? req.file.path : null;
+    const photo_path = req.file ? req.file.url : null;
 
     const newTutor = await Tutor.create({
       member_id: memberId,
@@ -32,6 +32,7 @@ const createTutor = async (req, res) => {
       certification: certification,
       photo_path: photo_path,
     });
+    console.log("Photo path to save:", photo_path);
 
     res.status(201).json(newTutor);
   } catch (err) {
