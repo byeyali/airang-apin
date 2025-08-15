@@ -199,20 +199,18 @@ const addTutorRegion = async (req, res) => {
 
     const result = [];
     for (const regionItem of regions) {
-      const { city_name, district_name } = regionItem;
+      const { region_name } = regionItem;
       const exists = await TutorRegion.findOne({
         where: {
           tutor_id: id,
-          city_name,
-          district_name,
+          region_name,
         },
       });
 
       if (!exists) {
         const newRegion = await TutorRegion.create({
           tutor_id: id,
-          city_name,
-          district_name,
+          region_name,
         });
         result.push(newRegion);
       }
