@@ -4,8 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
       tutor_id: { type: DataTypes.INTEGER, allowNull: false },
-      city_name: { type: DataTypes.STRING, allowNull: false },
-      district_name: { type: DataTypes.STRING, allowNull: false },
+      region_name: { type: DataTypes.STRING, allowNull: false },
     },
     {
       tableName: "tb_tutor_region",

@@ -43,7 +43,7 @@ const getAddress = async (req, res) => {
 };
 
 const getAddressArea = async (req, res) => {
-  const { keyword, currentPage = 1, countPerpage = 10 } = req.query;
+  const { keyword, currentPage = 1, countPerpage = 100 } = req.query;
 
   if (!keyword) {
     return res.status(400).json({ error: "동명 입력 ex. 삼성동, 목동" });
