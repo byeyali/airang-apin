@@ -13,8 +13,10 @@ const {
   deleteTutorFile,
   deleteTutor,
 } = require("../controllers/tutors");
+const { getMemberById } = require("../controllers/members");
 
 router.post("/", authorization, uploadSingle, createTutor);
+router.get("/", authorization, getMemberById);
 router.put("/:id", authorization, uploadSingle, updateTutor);
 router.delete("/:id", authorization, deleteTutor);
 router.post("/:id/category", authorization, addTutorCategory);

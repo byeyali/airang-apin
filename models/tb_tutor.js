@@ -20,6 +20,12 @@ module.exports = (sequelize, DataTypes) => {
       timestamps: true,
       createdAt: "created_at",
       updatedAt: "updated_at",
+      indexes: [
+        {
+          name: "idx_tutor_member_id",
+          fields: ["member_id"],
+        },
+      ],
     }
   );
 

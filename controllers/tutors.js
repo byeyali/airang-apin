@@ -40,6 +40,42 @@ const createTutor = async (req, res) => {
   }
 };
 
+const getTutorByMemberId = async (req, res) => {
+  try {
+    // memberId가 제공되었는지 확인
+    if (!req.query.memberId) {
+      return res.status(400).json({
+        message: "memberId 파라미터가 필요합니다.",
+      });
+    }
+
+    const tutor = await Tutor.findOne({
+      where: {
+        member_id: req.query.memberId,
+      },
+    });
+
+    if (!tutor) {
+      return res.status(404).json({
+        message: "쌤 정보를 찾을 수 없습니다.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: tutor,
+      message: "쌤 정보를 성공적으로 조회했습니다.",
+    });
+  } catch (err) {
+    console.error("getTutorByMemberId 에러:", err);
+    return res.status(500).json({
+      success: false,
+      message: "서버 내부 오류가 발생했습니다.",
+      error: err.message,
+    });
+  }
+};
+
 const updateTutor = async (req, res) => {
   try {
     // 파라미터값 세팅
@@ -294,6 +330,7 @@ const deleteTutorFile = async (req, res) => {
 
 module.exports = {
   createTutor,
+  getTutorByMemberId,
   updateTutor,
   deleteTutor,
   addTutorCategory,
