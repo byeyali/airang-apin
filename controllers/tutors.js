@@ -203,6 +203,26 @@ const addTutorCategory = async (req, res) => {
   }
 };
 
+const getTutorCategoryList = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const tutorCategory = await TutorCategory.find({
+      where: { tutor_id: id },
+    });
+
+    if (!tutorCategory) {
+      return res
+        .status(404)
+        .json({ message: "쌤 분야목록을 찾을수 없습니다." });
+    } else {
+      return res.json(tutorCategory);
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 const deleteTutorCategory = async (req, res) => {
   try {
     const id = req.params.id;
@@ -354,6 +374,7 @@ module.exports = {
   updateTutor,
   deleteTutor,
   addTutorCategory,
+  getTutorCategoryList,
   deleteTutorCategory,
   addTutorRegion,
   getTutorRegionList,
