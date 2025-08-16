@@ -206,18 +206,17 @@ const addTutorCategory = async (req, res) => {
 const getTutorCategoryList = async (req, res) => {
   try {
     const id = req.params.id;
+    console.log("요청된 tutor ID:", id);
 
-    const tutorCategory = await TutorCategory.find({
+    // tutor_id로 해당 쌤의 모든 분야 조회
+    const tutorCategories = await TutorCategory.findAll({
       where: { tutor_id: id },
     });
 
-    if (!tutorCategory) {
-      return res
-        .status(404)
-        .json({ message: "쌤 분야목록을 찾을수 없습니다." });
-    } else {
-      return res.json(tutorCategory);
-    }
+    console.log("조회된 분야 목록:", tutorCategories);
+
+    // 분야가 없어도 빈 배열 반환 (404 에러 대신)
+    return res.json(tutorCategories);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -281,19 +280,19 @@ const addTutorRegion = async (req, res) => {
 const getTutorRegionList = async (req, res) => {
   try {
     const id = req.params.id;
+    console.log("요청된 tutor ID:", id);
 
-    const tutorRegion = await TutorRegion.find({
+    // tutor_id로 해당 쌤의 모든 지역 조회
+    const tutorRegions = await TutorRegion.findAll({
       where: { tutor_id: id },
     });
 
-    if (!tutorRegion) {
-      return res
-        .status(404)
-        .json({ message: "쌤 지역목록을 찾을수 없습니다." });
-    } else {
-      return res.json(tutorRegion);
-    }
+    console.log("조회된 지역 목록:", tutorRegions);
+
+    // 지역이 없어도 빈 배열 반환 (404 에러 대신)
+    return res.json(tutorRegions);
   } catch (err) {
+    console.error("getTutorRegionList 에러:", err);
     res.status(500).json({ error: err.message });
   }
 };
