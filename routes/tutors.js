@@ -4,6 +4,7 @@ const authorization = require("../middlewares/auth");
 const { uploadSingle, uploadMultiple } = require("../middlewares/upload"); // 구조분해 할당
 const {
   createTutor,
+  getTutorByMemberId,
   updateTutor,
   addTutorCategory,
   deleteTutorCategory,
@@ -13,10 +14,9 @@ const {
   deleteTutorFile,
   deleteTutor,
 } = require("../controllers/tutors");
-const { getMemberById } = require("../controllers/members");
 
 router.post("/", authorization, uploadSingle, createTutor);
-router.get("/", authorization, getMemberById);
+router.get("/", authorization, getTutorByMemberId);
 router.put("/:id", authorization, uploadSingle, updateTutor);
 router.delete("/:id", authorization, deleteTutor);
 router.post("/:id/category", authorization, addTutorCategory);
