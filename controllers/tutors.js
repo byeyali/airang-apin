@@ -118,7 +118,9 @@ const updateTutor = async (req, res) => {
     if (certification && certification !== tutor.certification)
       updateData.certification = certification;
 
-    updateData.photo_path = photo_path;
+    if (photo_path !== tutor.photo_path) {
+      updateData.photo_path = photo_path;
+    }
 
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({ message: "변경할 항목이 없습니다." });
@@ -212,8 +214,6 @@ const getTutorCategoryList = async (req, res) => {
     const tutorCategories = await TutorCategory.findAll({
       where: { tutor_id: id },
     });
-
-    console.log("조회된 분야 목록:", tutorCategories);
 
     // 분야가 없어도 빈 배열 반환 (404 에러 대신)
     return res.json(tutorCategories);
