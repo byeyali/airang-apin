@@ -9,6 +9,7 @@ const {
   addTutorCategory,
   deleteTutorCategory,
   addTutorRegion,
+  getTutorRegionList,
   deleteTutorRegion,
   addTutorFile,
   deleteTutorFile,
@@ -22,6 +23,7 @@ router.delete("/:id", authorization, deleteTutor);
 router.post("/:id/category", authorization, addTutorCategory);
 router.delete("/:id/category", authorization, deleteTutorCategory);
 router.post("/:id/region", authorization, addTutorRegion);
+router.get("/:id/region", authorization, getTutorRegionList);
 router.delete("/:id/region", authorization, deleteTutorRegion);
 router.post("/:id/files", authorization, uploadMultiple, addTutorFile);
 router.delete("/:id/files", authorization, deleteTutorFile);

@@ -258,6 +258,26 @@ const addTutorRegion = async (req, res) => {
   }
 };
 
+const getTutorRegionList = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const tutorRegion = await TutorRegion.find({
+      where: { tutor_id: id },
+    });
+
+    if (!tutorRegion) {
+      return res
+        .status(404)
+        .json({ message: "쌤 지역목록을 찾을수 없습니다." });
+    } else {
+      return res.json(tutorRegion);
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 const deleteTutorRegion = async (req, res) => {
   try {
     const id = req.params.id;
@@ -336,6 +356,7 @@ module.exports = {
   addTutorCategory,
   deleteTutorCategory,
   addTutorRegion,
+  getTutorRegionList,
   deleteTutorRegion,
   addTutorFile,
   deleteTutorFile,
