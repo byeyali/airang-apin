@@ -63,5 +63,12 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
+  Member.associate = (models) => {
+    Member.hasOne(models.Tutor, {
+      foreignKey: "member_id",
+      sourceKey: "id",
+    });
+  };
+
   return Member;
 };
