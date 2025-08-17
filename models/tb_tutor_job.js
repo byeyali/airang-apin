@@ -18,9 +18,10 @@ module.exports = (sequelize, DataTypes) => {
       start_time: { type: DataTypes.TIME, allowNull: true }, // 서비스 시작시간
       end_time: { type: DataTypes.TIME, allowNull: true }, // 서비스 종료시간
       work_day: { type: DataTypes.STRING(20), allowNull: true }, // 서비스 요일
-      work_place: { type: DataTypes.STRING(255), allowNull: true }, // 시/도 구/군 지역
+      work_place: { type: DataTypes.STRING(100), allowNull: false }, // 근무지 지역(시/도-구/군-동)
+      work_place_address: { type: DataTypes.STRING(255), allowNull: false }, // 근무지 주소
 
-      payment: { type: DataTypes.DECIMAL(10,2), allowNull: true }, // 시급
+      payment: { type: DataTypes.DECIMAL(10, 2), allowNull: true }, // 시급
       payment_cycle: { type: DataTypes.STRING(50), allowNull: true }, // 입금주기
 
       preferred_tutor_id: { type: DataTypes.INTEGER, allowNull: true }, // 희망 튜터 ID (optional)
