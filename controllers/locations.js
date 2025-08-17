@@ -25,11 +25,16 @@ const getAddress = async (req, res) => {
     });
 
     const results = response.data.results;
-    console.log(results.juso.length);
 
     if (results.common.errorCode !== "0") {
       return res.status(500).json({ error: results.common.errorMessage });
     }
+
+    const addresses = results.addresses.map((item) => ({
+      address: item.roadAddr, // 도로명주소
+      city: item.siNm, // 시도명
+      area: item.sggNm ? item.sggNm : item.emdNm ? item.emdNm : " ", // 공백을 fallback으로
+    }));
 
     return res.status(200).json({
       addresses: results.juso,
