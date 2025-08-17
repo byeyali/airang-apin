@@ -6,6 +6,7 @@ const {
   createTutor,
   getTutorByMemberId,
   updateTutor,
+  getTutorList,
   addTutorCategory,
   getTutorCategoryList,
   deleteTutorCategory,
@@ -20,6 +21,7 @@ const {
 router.post("/", authorization, uploadSingle, createTutor);
 router.get("/", authorization, getTutorByMemberId);
 router.put("/:id", authorization, uploadSingle, updateTutor);
+router.get("/", getTutorList);
 router.delete("/:id", authorization, deleteTutor);
 router.post("/:id/category", authorization, addTutorCategory);
 router.get("/:id/category", authorization, getTutorCategoryList);

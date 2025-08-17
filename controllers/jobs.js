@@ -31,6 +31,7 @@ const createTutorJob = async (req, res) => {
       end_time: tutorJob.end_time,
       work_day: tutorJob.work_day,
       work_place: tutorJob.work_place, // 시/도 구/군 지역
+      work_place_address: tutorJob.work_place_address,
       payment: tutorJob.payment,
       payment_cycle: tutorJob.payment_cycle,
       preferred_tutor_id: tutorJob.preferred_tutor_id,

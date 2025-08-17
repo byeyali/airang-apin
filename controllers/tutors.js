@@ -139,6 +139,60 @@ const updateTutor = async (req, res) => {
   }
 };
 
+const { Op, fn, col } = require("sequelize");
+
+const getTutorList = async (req, res) => {
+  try {
+    const name = (req.query.name || "").trim();
+
+    const tutorList = await Member.findAll({
+      where: {
+        name: {
+          [Op.like]: `%${name}%`,
+        },
+      },
+      attributes: [
+        "name",
+        "email",
+        // 문자열로 연결된 카테고리명 추가
+        [
+          fn(
+            "STRING_AGG",
+            col("Tutor.TutorCategories.Category.category_nm"),
+            ", "
+          ),
+          "categories",
+        ],
+      ],
+      include: [
+        {
+          model: Tutor,
+          attributes: ["birth_year", "gender"],
+          include: [
+            {
+              model: TutorCategory,
+              attributes: [],
+              include: [
+                {
+                  model: Category,
+                  attributes: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      group: ["Member.id", "Tutor.id"],
+    });
+
+    console.log("조회된 튜터 목록:", tutorList);
+    return res.json(tutorList);
+  } catch (err) {
+    console.error("getTutorList 에러:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
 const deleteTutor = async (req, res) => {
   try {
     // 튜터 카테고리, 지역, 파일 우선 삭제
@@ -371,6 +425,7 @@ module.exports = {
   createTutor,
   getTutorByMemberId,
   updateTutor,
+  getTutorList,
   deleteTutor,
   addTutorCategory,
   getTutorCategoryList,
