@@ -33,7 +33,7 @@ const getAddress = async (req, res) => {
     const addresses = results.juso.map((item) => ({
       address: item.roadAddr, // 도로명주소
       city: item.siNm, // 시도명
-      area: item.sggNm ? item.sggNm : item.emdNm ? item.emdNm : " ", // 공백을 fallback으로
+      area: `${item.sggNm ?? ""} ${item.emdNm ?? ""}`.trim(),
     }));
 
     return res.status(200).json({
