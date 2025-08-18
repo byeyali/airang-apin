@@ -183,9 +183,7 @@ const getTutorList = async (req, res) => {
           attributes: ["region_name"],
         });
 
-        const regionNames = regions
-          .map((tr) => tr.Region.region_name)
-          .join(", ");
+        const regionNames = regions.map((tr) => tr.region_name).join(", ");
 
         return {
           id: tutor.id,
