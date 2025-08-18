@@ -178,12 +178,25 @@ const getTutorList = async (req, res) => {
           .map((tc) => tc.Category.category_nm)
           .join(", ");
 
+        const regions = await TutorRegion.findAll({
+          where: { tutor_id: tutor.id },
+          include: [
+            {
+              model: Region,
+              attributes: ["region_nm"],
+            },
+          ],
+        });
+
+        const regionNames = regions.map((tr) => tr.Region.region_nm).join(", ");
+
         return {
           id: tutor.id,
           name: tutor.name,
           birth_year: tutor.birth_year,
           gender: tutor.gender,
           categories: categoryNames,
+          regions: regionNames,
         };
       })
     );
