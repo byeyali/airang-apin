@@ -4,9 +4,18 @@ module.exports = (sequelize, DataTypes) => {
     {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
       member_id: { type: DataTypes.INTEGER, allowNull: false },
-      name: { tyep: DataTypes.STRING, allowNull: false },
-      birth_year: { tyep: DataTypes.STRING, allowNull: false },
-      gender: { tyep: DataTypes.STRING, allowNull: false },
+      name: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+      },
+      birth_year: {
+        type: DataTypes.STRING(4),
+        allowNull: false,
+      },
+      gender: {
+        type: DataTypes.STRING(6),
+        allowNull: false,
+      },
       school: DataTypes.STRING,
       major: DataTypes.STRING,
       is_graduate: DataTypes.STRING,
