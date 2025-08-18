@@ -45,6 +45,10 @@ module.exports = (sequelize, DataTypes) => {
       otherKey: "category_id",
       as: "categories",
     });
+    Tutor.hasMany(models.TutorCategory, {
+      foreignKey: "tutor_id",
+      as: "TutorCategories",
+    });
     Tutor.hasMany(models.TutorFile, {
       foreignKey: "tutor_id",
       as: "files",
