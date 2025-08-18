@@ -1,7 +1,6 @@
 const fs = require("fs");
 const { error } = require("console");
 const {
-  Member,
   Category,
   Tutor,
   TutorCategory,
@@ -160,37 +159,36 @@ const getTutorList = async (req, res) => {
           [Op.like]: `%${name}%`,
         },
       },
-      attributes: ["id", "name", "birth_year", "gender"],
+      attributes: ["id", "name", "birth_year", "gender", "photo_path"],
     });
 
-    // const responseData = await Promise.all(
-    //   tutors.map(async (tutor) => {
-    //     const categories = await TutorCategory.findAll({
-    //       where: { tutor_id: tutor.id },
-    //       include: [
-    //         {
-    //           model: Category,
-    //           attributes: ["category_nm"],
-    //         },
-    //       ],
-    //     });
+    const responseData = await Promise.all(
+      tutors.map(async (tutor) => {
+        const categories = await TutorCategory.findAll({
+          where: { tutor_id: tutor.id },
+          include: [
+            {
+              model: Category,
+              attributes: ["category_nm"],
+            },
+          ],
+        });
 
-    //     const categoryNames = categories
-    //       .map((tc) => tc.Category.category_nm)
-    //       .join(", ");
+        const categoryNames = categories
+          .map((tc) => tc.Category.category_nm)
+          .join(", ");
 
-    //     return {
-    //       id: tutor.id,
-    //       name: tutor.name,
-    //       birth_year: tutor.birth_year,
-    //       gender: tutor.gender,
-    //       categories: categoryNames,
-    //     };
-    //   })
-    // );
+        return {
+          id: tutor.id,
+          name: tutor.name,
+          birth_year: tutor.birth_year,
+          gender: tutor.gender,
+          categories: categoryNames,
+        };
+      })
+    );
 
-    // res.json(responseData);
-    res.json(tutors);
+    res.json(responseData);
   } catch (err) {
     console.error("getTutorList 에러:", error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
