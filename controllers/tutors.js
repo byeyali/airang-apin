@@ -161,7 +161,7 @@ const getTutorList = async (req, res) => {
       },
       attributes: ["id", "name", "birth_year", "gender", "photo_path"],
     });
-
+    console.log("tutors", tutors);
     const responseData = await Promise.all(
       tutors.map(async (tutor) => {
         const categories = await TutorCategory.findAll({
@@ -173,7 +173,7 @@ const getTutorList = async (req, res) => {
             },
           ],
         });
-
+        console.log("categories", categories);
         const categoryNames = categories
           .map((tc) => tc.Category.category_nm)
           .join(", ");
@@ -182,9 +182,9 @@ const getTutorList = async (req, res) => {
           where: { tutor_id: tutor.id },
           attributes: ["region_name"],
         });
-
+        console.log("regions", regions);
         const regionNames = regions.map((tr) => tr.region_name).join(", ");
-
+        console.log("regionNames", regionNames);
         return {
           id: tutor.id,
           name: tutor.name,
