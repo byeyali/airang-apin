@@ -14,6 +14,7 @@ const createTutor = async (req, res) => {
 
   try {
     const {
+      name,
       school,
       major,
       is_graduate,
@@ -29,6 +30,7 @@ const createTutor = async (req, res) => {
 
     const newTutor = await Tutor.create({
       member_id: memberId,
+      name: name,
       school: school,
       major: major,
       is_graduate: is_graduate,
@@ -152,51 +154,45 @@ const getTutorList = async (req, res) => {
   try {
     const name = (req.query.name || "").trim();
 
-    const tutorList = await Member.findAll({
+    const tutors = await Tutor.findAll({
       where: {
         name: {
           [Op.like]: `%${name}%`,
         },
       },
-      attributes: [
-        "name",
-        "email",
-        // 문자열로 연결된 카테고리명 추가
-        [
-          fn(
-            "STRING_AGG",
-            col("Tutor.TutorCategories.Category.category_nm"),
-            ", "
-          ),
-          "categories",
-        ],
-      ],
-      include: [
-        {
-          model: Tutor,
-          attributes: ["birth_year", "gender"],
-          include: [
-            {
-              model: TutorCategory,
-              attributes: [],
-              include: [
-                {
-                  model: Category,
-                  attributes: [],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-      group: ["Member.id", "Tutor.id"],
+      attributes: ["id", "name", "birth_year", "gender"],
     });
 
-    console.log("조회된 튜터 목록:", tutorList);
-    return res.json(tutorList);
+    const responseData = await Promise.all(
+      tutors.map(async (tutor) => {
+        const categories = await TutorCategory.findAll({
+          where: { tutor_id: tutor.id },
+          include: [
+            {
+              model: Category,
+              attributes: ["category_nm"],
+            },
+          ],
+        });
+
+        const categoryNames = categories
+          .map((tc) => tc.Category.category_nm)
+          .join(", ");
+
+        return {
+          id: tutor.id,
+          name: tutor.name,
+          birth_year: tutor.birth_year,
+          gender: tutor.gender,
+          categories: categoryNames,
+        };
+      })
+    );
+
+    res.json(responseData);
   } catch (err) {
-    console.error("getTutorList 에러:", err);
-    res.status(500).json({ error: err.message });
+    console.error("getTutorList 에러:", error);
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 };
 
