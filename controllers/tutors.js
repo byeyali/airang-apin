@@ -1,6 +1,13 @@
 const fs = require("fs");
 const { error } = require("console");
-const { Tutor, TutorCategory, TutorRegion, TutorFile } = require("../models");
+const {
+  Member,
+  Category,
+  Tutor,
+  TutorCategory,
+  TutorRegion,
+  TutorFile,
+} = require("../models");
 
 const createTutor = async (req, res) => {
   const memberId = req.member.id;
