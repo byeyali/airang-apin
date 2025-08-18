@@ -163,33 +163,34 @@ const getTutorList = async (req, res) => {
       attributes: ["id", "name", "birth_year", "gender"],
     });
 
-    const responseData = await Promise.all(
-      tutors.map(async (tutor) => {
-        const categories = await TutorCategory.findAll({
-          where: { tutor_id: tutor.id },
-          include: [
-            {
-              model: Category,
-              attributes: ["category_nm"],
-            },
-          ],
-        });
+    // const responseData = await Promise.all(
+    //   tutors.map(async (tutor) => {
+    //     const categories = await TutorCategory.findAll({
+    //       where: { tutor_id: tutor.id },
+    //       include: [
+    //         {
+    //           model: Category,
+    //           attributes: ["category_nm"],
+    //         },
+    //       ],
+    //     });
 
-        const categoryNames = categories
-          .map((tc) => tc.Category.category_nm)
-          .join(", ");
+    //     const categoryNames = categories
+    //       .map((tc) => tc.Category.category_nm)
+    //       .join(", ");
 
-        return {
-          id: tutor.id,
-          name: tutor.name,
-          birth_year: tutor.birth_year,
-          gender: tutor.gender,
-          categories: categoryNames,
-        };
-      })
-    );
+    //     return {
+    //       id: tutor.id,
+    //       name: tutor.name,
+    //       birth_year: tutor.birth_year,
+    //       gender: tutor.gender,
+    //       categories: categoryNames,
+    //     };
+    //   })
+    // );
 
-    res.json(responseData);
+    // res.json(responseData);
+    res.json(tutors);
   } catch (err) {
     console.error("getTutorList 에러:", error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
