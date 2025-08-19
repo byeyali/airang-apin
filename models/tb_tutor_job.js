@@ -25,7 +25,8 @@ module.exports = (sequelize, DataTypes) => {
       payment_cycle: { type: DataTypes.STRING(50), allowNull: true }, // 입금주기
 
       preferred_tutor_id: { type: DataTypes.INTEGER, allowNull: true }, // 희망 튜터 ID (optional)
-      tutor_age: { type: DataTypes.INTEGER, allowNull: true }, // 선생님 나이
+      tutor_age_fr: { type: DataTypes.INTEGER, allowNull: true }, // 선생님 나이(FR)
+      tutor_age_to: { type: DataTypes.INTEGER, allowNull: true }, // 선생님 나이(TO)
       tutor_sex: { type: DataTypes.STRING(50), allowNull: true }, // 선생님 성별
 
       description: { type: DataTypes.TEXT, allowNull: true }, // 상세내용
