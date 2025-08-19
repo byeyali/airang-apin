@@ -10,7 +10,7 @@ const createTutorJob = async (req, res) => {
 
     // 요청자가 부모 회원이 아닐 경우 에러 RETURN
     const member = await Member.findOne({
-      where: { id: requesterId, member_type: "mommy" },
+      where: { id: requesterId, member_type: "parents" },
     });
 
     if (!member) {
@@ -33,6 +33,7 @@ const createTutorJob = async (req, res) => {
       work_place: tutorJob.work_place, // 시/도 구/군 지역
       work_place_address: tutorJob.work_place_address,
       payment: tutorJob.payment,
+      negotiable: tutorJob.negotiable,
       payment_cycle: tutorJob.payment_cycle,
       preferred_tutor_id: tutorJob.preferred_tutor_id,
       tutor_age_fr: tutorJob.tutor_age_fr,
@@ -89,6 +90,8 @@ const updateTutorJob = async (req, res) => {
       updatedData.work_place = tobeTutorJob.work_place;
     if (asisTutorJob.payment !== tobeTutorJob.payment)
       updatedData.payment = tobeTutorJob.payment;
+    if (asisTutorJob.negotiable !== tobeTutorJob.negotiable)
+      updatedData.negotiable = tobeTutorJob.negotiable;
     if (asisTutorJob.payment_cycle !== tobeTutorJob.payment_cycle)
       updatedData.payment_cycle = tobeTutorJob.payment_cycle;
     if (asisTutorJob.preferred_tutor_id !== tobeTutorJob.preferred_tutor_id)

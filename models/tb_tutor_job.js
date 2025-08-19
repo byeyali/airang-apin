@@ -22,6 +22,11 @@ module.exports = (sequelize, DataTypes) => {
       work_place_address: { type: DataTypes.STRING(255), allowNull: false }, // 근무지 주소
 
       payment: { type: DataTypes.DECIMAL(10, 2), allowNull: true }, // 시급
+      negotiable: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      }, // 협의가능
       payment_cycle: { type: DataTypes.STRING(50), allowNull: true }, // 입금주기
 
       preferred_tutor_id: { type: DataTypes.INTEGER, allowNull: true }, // 희망 튜터 ID (optional)
