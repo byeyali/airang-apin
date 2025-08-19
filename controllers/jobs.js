@@ -35,7 +35,8 @@ const createTutorJob = async (req, res) => {
       payment: tutorJob.payment,
       payment_cycle: tutorJob.payment_cycle,
       preferred_tutor_id: tutorJob.preferred_tutor_id,
-      tutor_age: tutorJob.tutor_age,
+      tutor_age_fr: tutorJob.tutor_age_fr,
+      tutor_age_to: tutorJob.tutor_age_to,
       tutor_sex: tutorJob.tutor_sex,
       description: tutorJob.description,
       etc: tutorJob.etc,
@@ -92,8 +93,10 @@ const updateTutorJob = async (req, res) => {
       updatedData.payment_cycle = tobeTutorJob.payment_cycle;
     if (asisTutorJob.preferred_tutor_id !== tobeTutorJob.preferred_tutor_id)
       updatedData.preferred_tutor_id = tobeTutorJob.preferred_tutor_id;
-    if (asisTutorJob.tutor_age !== tobeTutorJob.tutor_age)
-      updatedData.tutor_age = tobeTutorJob.tutor_age;
+    if (asisTutorJob.tutor_age_fr !== tobeTutorJob.tutor_age_fr)
+      updatedData.tutor_age_fr = tobeTutorJob.tutor_age_fr;
+    if (asisTutorJob.tutor_age_to !== tobeTutorJob.tutor_age_to)
+      updatedData.tutor_age_to = tobeTutorJob.tutor_age_to;
     if (asisTutorJob.tutor_sex !== tobeTutorJob.tutor_sex)
       updatedData.tutor_sex = tobeTutorJob.tutor_sex;
     if (asisTutorJob.description !== tobeTutorJob.description)
