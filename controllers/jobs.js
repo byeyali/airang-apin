@@ -173,7 +173,7 @@ const deleteTutorJob = async (req, res) => {
 
 const addTutorJobCategory = async (req, res) => {
   try {
-    const jobId = req.params.jobId;
+    const jobId = req.params.id;
     const categories = req.body.categories;
 
     if (!Array.isArray(categories)) {
