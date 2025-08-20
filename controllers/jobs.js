@@ -134,6 +134,7 @@ const updateTutorJob = async (req, res) => {
 
 const getTutorJobList = async (req, res) => {
   try {
+    // 쿼리 파라미터에서 member_id와 member_type 추출
     const memberId = req.query.member_id;
     const memberType = req.query.member_type;
 
@@ -166,7 +167,7 @@ const getTutorJobList = async (req, res) => {
       whereCondition[Op.or] = [
         { status: "open" },
         { matched_tutor_id: memberId },
-        { prepfered_tutor_id: memberId },
+        { preferred_tutor_id: memberId },
       ];
     }
     // admin은 전체 공고를 볼 수 있도록 whereCondition을 빈 객체로 유지
@@ -224,51 +225,30 @@ const getTutorJobList = async (req, res) => {
     // 페이지네이션
     const offset = (page - 1) * limit;
 
-    // 카테고리 필터링을 위한 include 조건
+    // 임시로 카테고리 정보 없이 기본 데이터만 조회
     const includeConditions = [
       {
         model: Member,
         as: "requester",
         attributes: ["id", "name", "email"],
       },
-      {
-        model: TutorJobCategory,
-        as: "categories",
-        include: [
-          {
-            model: Category,
-            as: "category",
-            attributes: ["id", "category_nm"],
-          },
-        ],
-      },
     ];
 
-    // 카테고리 ID로 필터링
-    if (categoryId) {
-      includeConditions[1].where = { category_id: categoryId };
-    }
-
-    // 데이터 조회
+    // 데이터 조회 (카테고리 정보 제외)
     const { count, rows: jobList } = await TutorJob.findAndCountAll({
       where: whereCondition,
       include: includeConditions,
       order: orderCondition,
       limit: parseInt(limit),
       offset: parseInt(offset),
-      distinct: true, // 카테고리 조인으로 인한 중복 제거
     });
 
     // 응답 데이터 가공
     const processedJobList = jobList.map((job) => {
       const jobData = job.toJSON();
 
-      // 카테고리 정보 추출
-      jobData.categories =
-        jobData.categories?.map((tjc) => ({
-          id: tjc.category.id,
-          name: tjc.category.category_nm,
-        })) || [];
+      // 카테고리 정보는 빈 배열로 설정 (나중에 별도 조회)
+      jobData.categories = [];
 
       return jobData;
     });
