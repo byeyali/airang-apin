@@ -134,8 +134,8 @@ const updateTutorJob = async (req, res) => {
 
 const getTutorJobList = async (req, res) => {
   try {
-    const memberId = req.member.id;
-    const memberType = req.member.member_type;
+    const memberId = req.query.member_id;
+    const memberType = req.query.member_type;
 
     // 쿼리 파라미터 추출
     const {
