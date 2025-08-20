@@ -151,17 +151,24 @@ const getTutorJobList = async (req, res) => {
     } = req.query;
 
     // 사용자 타입 검증
-    if (!memberType || !["parents", "tutors"].includes(memberType)) {
+    if (!memberType || !["parents", "tutors", "admin"].includes(memberType)) {
       return res
         .status(400)
         .json({ error: "유효하지 않은 사용자 타입입니다." });
     }
 
     // 기본 WHERE 조건
-    let whereCondition =
-      memberType === "parents"
-        ? { requester_id: memberId }
-        : { status: "open" };
+    let whereCondition = {};
+
+    if (memberType === "parents") {
+      whereCondition.requester_id = memberId;
+    } else if (memberType === "tutors") {
+      whereCondition[Op.or] = [
+        { status: "open" },
+        { matched_tutor_id: memberId },
+        { prepfered_tutor_id: memberId },
+      ];
+    }
 
     // 추가 필터 조건
     if (status) {
