@@ -1,6 +1,6 @@
 const fs = require("fs");
 const { error } = require("console");
-const { TutorJob, Member, TutorJobCategory } = require("../models");
+const { TutorJob, Member, TutorJobCategory, Category } = require("../models");
 
 const createTutorJob = async (req, res) => {
   try {
@@ -151,7 +151,7 @@ const getTutorJobList = async (req, res) => {
     } = req.query;
 
     // 사용자 타입 검증
-    if (!memberType || !["parents", "tutors", "admin"].includes(memberType)) {
+    if (!memberType || !["parents", "tutor", "admin"].includes(memberType)) {
       return res
         .status(400)
         .json({ error: "유효하지 않은 사용자 타입입니다." });
@@ -169,10 +169,21 @@ const getTutorJobList = async (req, res) => {
         { prepfered_tutor_id: memberId },
       ];
     }
+    // admin은 전체 공고를 볼 수 있도록 whereCondition을 빈 객체로 유지
 
     // 추가 필터 조건
     if (status) {
-      whereCondition.status = status;
+      // tutors의 경우 Op.or 조건이 있으므로 status 필터를 조정
+      if (memberType === "tutors" && whereCondition[Op.or]) {
+        // tutors의 경우 status가 "open"인 경우만 필터링
+        if (status !== "open") {
+          whereCondition[Op.or] = whereCondition[Op.or].filter(
+            (condition) => !condition.status || condition.status === status
+          );
+        }
+      } else {
+        whereCondition.status = status;
+      }
     }
 
     if (startDate && endDate) {
@@ -190,10 +201,21 @@ const getTutorJobList = async (req, res) => {
     }
 
     if (searchKeyword) {
-      whereCondition[Op.or] = [
-        { title: { [Op.like]: `%${searchKeyword}%` } },
-        { description: { [Op.like]: `%${searchKeyword}%` } },
-      ];
+      // 검색 조건을 Op.and로 감싸서 기존 조건과 AND 연산
+      const searchCondition = {
+        [Op.or]: [
+          { title: { [Op.like]: `%${searchKeyword}%` } },
+          { description: { [Op.like]: `%${searchKeyword}%` } },
+        ],
+      };
+
+      if (Object.keys(whereCondition).length > 0) {
+        whereCondition = {
+          [Op.and]: [whereCondition, searchCondition],
+        };
+      } else {
+        whereCondition = searchCondition;
+      }
     }
 
     // 정렬 조건
@@ -280,7 +302,7 @@ const getTutorJobList = async (req, res) => {
   } catch (err) {
     console.error("getTutorJobList 에러:", err);
     res.status(500).json({
-      error: "공지 목록 조회 중 오류가 발생했습니다.",
+      error: "공고 목록 조회 중 오류가 발생했습니다.",
       details: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
   }
