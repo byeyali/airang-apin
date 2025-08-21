@@ -6,7 +6,7 @@ const jobController = require("../controllers/jobs");
 router.post("/", authorization, jobController.createTutorJob);
 router.put("/:id", authorization, jobController.updateTutorJob);
 router.get("/", authorization, jobController.getTutorJobList);
-router.get("/:id", jobController.getTutorJobById);
+router.get("/:id", authorization, jobController.getTutorJobById);
 router.delete("/:id", authorization, jobController.deleteTutorJob);
 router.post("/:id/category", authorization, jobController.addTutorJobCategory);
 router.delete(
