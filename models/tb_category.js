@@ -61,5 +61,15 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
+  // 관계 설정
+  Category.associate = (models) => {
+    Category.belongsToMany(models.TutorJob, {
+      through: models.TutorJobCategory,
+      foreignKey: "category_id",
+      otherKey: "tutor_job_id",
+      as: "tutorJobs",
+    });
+  };
+
   return Category;
 };

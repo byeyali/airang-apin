@@ -293,18 +293,34 @@ const getTutorJobById = async (req, res) => {
     const job = await TutorJob.findByPk(req.params.id, {
       include: [
         {
-          model: TutorJobCategory,
+          model: Member,
+          as: "requester",
+          attributes: ["id", "name", "email", "phone"],
+        },
+        {
+          model: Category,
           as: "categories",
-          include: [
-            {
-              model: Category,
-              as: "category",
-              attributes: ["id", "category_nm", "category_cd"],
-            },
-          ],
+          through: { attributes: [] }, // 중간 테이블 속성은 제외
+          attributes: ["id", "category_nm", "category_cd", "grp_cd"],
         },
       ],
     });
+
+    if (!job) {
+      return res.status(404).json({ message: "도와줘요 쌤 공고가 없습니다." });
+    } else {
+      // 응답 데이터 가공
+      const jobData = job.toJSON();
+      jobData.categories =
+        jobData.categories?.map((cat) => ({
+          id: cat.id,
+          name: cat.category_nm,
+          category_cd: cat.category_cd,
+          grp_cd: cat.grp_cd,
+        })) || [];
+
+      return res.json(jobData);
+    }
 
     if (!job) {
       return res.status(404).json({ message: "도와줘요 쌤 공고가 없습니다." });
