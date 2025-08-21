@@ -290,7 +290,22 @@ const getTutorJobList = async (req, res) => {
 
 const getTutorJobById = async (req, res) => {
   try {
-    const job = await TutorJob.findByPk(req.params.id);
+    const job = await TutorJob.findByPk(req.params.id, {
+      include: [
+        {
+          model: TutorJobCategory,
+          as: "categories",
+          include: [
+            {
+              model: Category,
+              as: "category",
+              attributes: ["id", "category_nm", "category_cd"],
+            },
+          ],
+        },
+      ],
+    });
+
     if (!job) {
       return res.status(404).json({ message: "도와줘요 쌤 공고가 없습니다." });
     } else {
