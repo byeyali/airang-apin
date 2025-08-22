@@ -290,6 +290,10 @@ const getTutorJobList = async (req, res) => {
 
 const getTutorJobById = async (req, res) => {
   try {
+    console.log("=== getTutorJobById 시작 ===");
+    console.log("요청된 ID:", req.params.id);
+    console.log("사용자 정보:", req.member);
+
     const job = await TutorJob.findByPk(req.params.id, {
       include: [
         {
@@ -297,36 +301,38 @@ const getTutorJobById = async (req, res) => {
           as: "requester",
           attributes: ["id", "name", "email", "phone"],
         },
+        {
+          model: Category,
+          as: "categories",
+          through: { attributes: [] }, // 중간 테이블 속성은 제외
+          attributes: ["id", "category_nm", "category_cd", "grp_cd"],
+        },
       ],
     });
+
+    console.log("조회된 job:", job ? "성공" : "실패");
 
     if (!job) {
       return res.status(404).json({ message: "도와줘요 쌤 공고가 없습니다." });
     }
 
-    // 카테고리 정보를 별도로 조회
-    const categories = await Category.findAll({
-      include: [
-        {
-          model: TutorJobCategory,
-          where: { tutor_job_id: req.params.id },
-          attributes: [],
-        },
-      ],
-      attributes: ["id", "category_nm", "category_cd", "grp_cd"],
-    });
-
     const jobData = job.toJSON();
-    jobData.categories = categories.map((cat) => ({
-      id: cat.id,
-      name: cat.category_nm,
-      category_cd: cat.category_cd,
-      grp_cd: cat.grp_cd,
-    }));
+    console.log("카테고리 개수:", jobData.categories?.length || 0);
 
+    jobData.categories =
+      jobData.categories?.map((cat) => ({
+        id: cat.id,
+        name: cat.category_nm,
+        category_cd: cat.category_cd,
+        grp_cd: cat.grp_cd,
+      })) || [];
+
+    console.log("최종 응답 데이터 준비 완료");
     return res.json(jobData);
   } catch (err) {
-    console.error("getTutorJobById 에러:", err);
+    console.error("=== getTutorJobById 에러 ===");
+    console.error("에러 메시지:", err.message);
+    console.error("에러 스택:", err.stack);
     res.status(500).json({ error: err.message });
   }
 };
