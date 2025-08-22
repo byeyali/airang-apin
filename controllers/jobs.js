@@ -1,7 +1,7 @@
 const fs = require("fs");
 const { error } = require("console");
 const { TutorJob, Member, TutorJobCategory, Category } = require("../models");
-const { Op } = require("sequelize");
+const { Op, DATE } = require("sequelize");
 
 const createTutorJob = async (req, res) => {
   try {
@@ -56,6 +56,9 @@ const getTutorJobList = async (req, res) => {
     const memberId = req.query.member_id;
     const memberType = req.query.member_type;
 
+    console.log("memberId", memberId);
+    console.log("memberType", memberType);
+
     // 쿼리 파라미터 추출
     const {
       page = 1,
@@ -81,7 +84,7 @@ const getTutorJobList = async (req, res) => {
 
     if (memberType === "parents") {
       whereCondition.requester_id = memberId;
-    } else if (memberType === "tutors") {
+    } else if (memberType === "tutor") {
       whereCondition[Op.or] = [
         { status: "open" },
         { matched_tutor_id: memberId },
@@ -92,9 +95,9 @@ const getTutorJobList = async (req, res) => {
 
     // 추가 필터 조건
     if (status) {
-      // tutors의 경우 Op.or 조건이 있으므로 status 필터를 조정
-      if (memberType === "tutors" && whereCondition[Op.or]) {
-        // tutors의 경우 status가 "open"인 경우만 필터링
+      // tutor의 경우 Op.or 조건이 있으므로 status 필터를 조정
+      if (memberType === "tutor" && whereCondition[Op.or]) {
+        // tutor의 경우 status가 "open"인 경우만 필터링
         if (status !== "open") {
           whereCondition[Op.or] = whereCondition[Op.or].filter(
             (condition) => !condition.status || condition.status === status
@@ -338,6 +341,50 @@ const updateTutorJob = async (req, res) => {
   }
 };
 
+const updateTutorJobStatus = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    const { status, matched_tutor_id, matched_at } = req.body;
+
+    // TUTOR 공고 현재 상태 조회
+    const asisStatus = await TutorJob.findOne({
+      where: { id: jobId },
+    });
+    if (!asisStatus) {
+      return res.status(404).json({
+        message: "도와줘요~쌤 공고를 찾을 수 없습니다.",
+      });
+    }
+
+    const updatedData = {};
+    if (status === "matched") {
+      updatedData.status = status;
+      updatedData.matched_tutor_id = matched_tutor_id;
+      updatedData.matched_at = new Date();
+    } else if (asisStatus.status !== "closed") {
+      updatedData.status = status;
+    }
+
+    const [updated] = await TutorJob.update(updatedData, {
+      where: { id: jobId },
+    });
+
+    if (updated === 0) {
+      return res.status(400).json({ message: "업데이트 실패" });
+    }
+
+    // 업데이트 후 새 데이터 조회
+    const updatedStatus = await TutorJob.findOne({
+      where: { id: jobId },
+    });
+
+    res.json(updatedStatus);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 const deleteTutorJob = async (req, res) => {
   try {
     // 공고상태 확인
@@ -425,6 +472,7 @@ module.exports = {
   updateTutorJob,
   getTutorJobList,
   getTutorJobById,
+  updateTutorJobStatus,
   deleteTutorJob,
   addTutorJobCategory,
   deleteTutorJobCategory,
