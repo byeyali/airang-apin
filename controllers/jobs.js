@@ -1,6 +1,7 @@
 const fs = require("fs");
 const { error } = require("console");
 const { TutorJob, Member, TutorJobCategory, Category } = require("../models");
+const { Op } = require("sequelize");
 
 const createTutorJob = async (req, res) => {
   try {
@@ -44,89 +45,6 @@ const createTutorJob = async (req, res) => {
     });
 
     res.status(201).json(newTutorJob);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-const updateTutorJob = async (req, res) => {
-  try {
-    const jobId = req.params.id;
-
-    const { title, ...matched_at } = req.body;
-    const tobeTutorJob = { title, ...matched_at };
-
-    // TUTOR 공고 조회
-    const asisTutorJob = await TutorJob.findOne({
-      where: { id: jobId },
-    });
-    if (!asisTutorJob) {
-      return res.status(404).json({
-        message: "도와줘요~쌤 공고를 찾을 수 없습니다.",
-      });
-    }
-
-    const updatedData = {};
-    // 변경사항 비교
-    if (asisTutorJob.title !== tobeTutorJob.title)
-      updatedData.title = tobeTutorJob.title;
-    if (asisTutorJob.target !== tobeTutorJob.target)
-      updatedData.target = tobeTutorJob.target;
-    if (asisTutorJob.objective !== tobeTutorJob.objective)
-      updatedData.objective = tobeTutorJob.objective;
-    if (asisTutorJob.work_type !== tobeTutorJob.work_type)
-      updatedData.work_type = tobeTutorJob.work_type;
-    if (asisTutorJob.start_date !== tobeTutorJob.start_date)
-      updatedData.start_date = tobeTutorJob.start_date;
-    if (asisTutorJob.end_date !== tobeTutorJob.end_date)
-      updatedData.end_date = tobeTutorJob.end_date;
-    if (asisTutorJob.start_time !== tobeTutorJob.start_time)
-      updatedData.start_time = tobeTutorJob.start_time;
-    if (asisTutorJob.end_time !== tobeTutorJob.end_time)
-      updatedData.end_time = tobeTutorJob.end_time;
-    if (asisTutorJob.work_day !== tobeTutorJob.work_day)
-      updatedData.work_day = tobeTutorJob.work_day;
-    if (asisTutorJob.work_place !== tobeTutorJob.work_place)
-      updatedData.work_place = tobeTutorJob.work_place;
-    if (asisTutorJob.payment !== tobeTutorJob.payment)
-      updatedData.payment = tobeTutorJob.payment;
-    if (asisTutorJob.negotiable !== tobeTutorJob.negotiable)
-      updatedData.negotiable = tobeTutorJob.negotiable;
-    if (asisTutorJob.payment_cycle !== tobeTutorJob.payment_cycle)
-      updatedData.payment_cycle = tobeTutorJob.payment_cycle;
-    if (asisTutorJob.preferred_tutor_id !== tobeTutorJob.preferred_tutor_id)
-      updatedData.preferred_tutor_id = tobeTutorJob.preferred_tutor_id;
-    if (asisTutorJob.tutor_age_fr !== tobeTutorJob.tutor_age_fr)
-      updatedData.tutor_age_fr = tobeTutorJob.tutor_age_fr;
-    if (asisTutorJob.tutor_age_to !== tobeTutorJob.tutor_age_to)
-      updatedData.tutor_age_to = tobeTutorJob.tutor_age_to;
-    if (asisTutorJob.tutor_sex !== tobeTutorJob.tutor_sex)
-      updatedData.tutor_sex = tobeTutorJob.tutor_sex;
-    if (asisTutorJob.description !== tobeTutorJob.description)
-      updatedData.description = tobeTutorJob.description;
-    if (asisTutorJob.etc !== tobeTutorJob.etc)
-      updatedData.etc = tobeTutorJob.etc;
-    if (asisTutorJob.status !== tobeTutorJob.status)
-      updatedData.status = tobeTutorJob.status;
-    if (asisTutorJob.matched_tutor_id !== tobeTutorJob.matched_tutor_id)
-      updatedData.matched_tutor_id = tobeTutorJob.matched_tutor_id;
-    if (asisTutorJob.matched_at !== tobeTutorJob.matched_at)
-      updatedData.matched_at = tobeTutorJob.matched_at;
-
-    const [updated] = await TutorJob.update(updatedData, {
-      where: { id: jobId },
-    });
-
-    if (updated === 0) {
-      return res.status(400).json({ message: "업데이트 실패" });
-    }
-
-    // 업데이트 후 새 데이터 조회
-    const updatedJob = await TutorJob.findOne({
-      where: { id: jobId },
-    });
-
-    res.json(updatedJob);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -337,6 +255,89 @@ const getTutorJobById = async (req, res) => {
   }
 };
 
+const updateTutorJob = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    const { title, ...matched_at } = req.body;
+    const tobeTutorJob = { title, ...matched_at };
+
+    // TUTOR 공고 조회
+    const asisTutorJob = await TutorJob.findOne({
+      where: { id: jobId },
+    });
+    if (!asisTutorJob) {
+      return res.status(404).json({
+        message: "도와줘요~쌤 공고를 찾을 수 없습니다.",
+      });
+    }
+
+    const updatedData = {};
+    // 변경사항 비교
+    if (asisTutorJob.title !== tobeTutorJob.title)
+      updatedData.title = tobeTutorJob.title;
+    if (asisTutorJob.target !== tobeTutorJob.target)
+      updatedData.target = tobeTutorJob.target;
+    if (asisTutorJob.objective !== tobeTutorJob.objective)
+      updatedData.objective = tobeTutorJob.objective;
+    if (asisTutorJob.work_type !== tobeTutorJob.work_type)
+      updatedData.work_type = tobeTutorJob.work_type;
+    if (asisTutorJob.start_date !== tobeTutorJob.start_date)
+      updatedData.start_date = tobeTutorJob.start_date;
+    if (asisTutorJob.end_date !== tobeTutorJob.end_date)
+      updatedData.end_date = tobeTutorJob.end_date;
+    if (asisTutorJob.start_time !== tobeTutorJob.start_time)
+      updatedData.start_time = tobeTutorJob.start_time;
+    if (asisTutorJob.end_time !== tobeTutorJob.end_time)
+      updatedData.end_time = tobeTutorJob.end_time;
+    if (asisTutorJob.work_day !== tobeTutorJob.work_day)
+      updatedData.work_day = tobeTutorJob.work_day;
+    if (asisTutorJob.work_place !== tobeTutorJob.work_place)
+      updatedData.work_place = tobeTutorJob.work_place;
+    if (asisTutorJob.payment !== tobeTutorJob.payment)
+      updatedData.payment = tobeTutorJob.payment;
+    if (asisTutorJob.negotiable !== tobeTutorJob.negotiable)
+      updatedData.negotiable = tobeTutorJob.negotiable;
+    if (asisTutorJob.payment_cycle !== tobeTutorJob.payment_cycle)
+      updatedData.payment_cycle = tobeTutorJob.payment_cycle;
+    if (asisTutorJob.preferred_tutor_id !== tobeTutorJob.preferred_tutor_id)
+      updatedData.preferred_tutor_id = tobeTutorJob.preferred_tutor_id;
+    if (asisTutorJob.tutor_age_fr !== tobeTutorJob.tutor_age_fr)
+      updatedData.tutor_age_fr = tobeTutorJob.tutor_age_fr;
+    if (asisTutorJob.tutor_age_to !== tobeTutorJob.tutor_age_to)
+      updatedData.tutor_age_to = tobeTutorJob.tutor_age_to;
+    if (asisTutorJob.tutor_sex !== tobeTutorJob.tutor_sex)
+      updatedData.tutor_sex = tobeTutorJob.tutor_sex;
+    if (asisTutorJob.description !== tobeTutorJob.description)
+      updatedData.description = tobeTutorJob.description;
+    if (asisTutorJob.etc !== tobeTutorJob.etc)
+      updatedData.etc = tobeTutorJob.etc;
+    if (asisTutorJob.status !== tobeTutorJob.status)
+      updatedData.status = tobeTutorJob.status;
+    if (asisTutorJob.matched_tutor_id !== tobeTutorJob.matched_tutor_id)
+      updatedData.matched_tutor_id = tobeTutorJob.matched_tutor_id;
+    if (asisTutorJob.matched_at !== tobeTutorJob.matched_at)
+      updatedData.matched_at = tobeTutorJob.matched_at;
+
+    const [updated] = await TutorJob.update(updatedData, {
+      where: { id: jobId },
+    });
+
+    if (updated === 0) {
+      return res.status(400).json({ message: "업데이트 실패" });
+    }
+
+    // 업데이트 후 새 데이터 조회
+    const updatedJob = await TutorJob.findOne({
+      where: { id: jobId },
+    });
+
+    res.json(updatedJob);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 const deleteTutorJob = async (req, res) => {
   try {
     // 공고상태 확인
@@ -400,7 +401,7 @@ const addTutorJobCategory = async (req, res) => {
 
 const deleteTutorJobCategory = async (req, res) => {
   try {
-    const jobId = req.params.jobId;
+    const jobId = req.params.id;
 
     const deletedCount = await TutorJobCategory.destroy({
       where: { tutor_job_id: jobId },
