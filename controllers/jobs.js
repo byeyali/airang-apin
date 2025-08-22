@@ -299,7 +299,7 @@ const getTutorJobById = async (req, res) => {
         {
           model: Member,
           as: "requester",
-          attributes: ["id", "name", "email", "phone"],
+          attributes: ["id", "name", "email", "cell_phone"],
         },
         {
           model: Category,
