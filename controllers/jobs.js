@@ -297,37 +297,36 @@ const getTutorJobById = async (req, res) => {
           as: "requester",
           attributes: ["id", "name", "email", "phone"],
         },
-        {
-          model: Category,
-          as: "categories",
-          through: { attributes: [] }, // 중간 테이블 속성은 제외
-          attributes: ["id", "category_nm", "category_cd", "grp_cd"],
-        },
       ],
     });
 
     if (!job) {
       return res.status(404).json({ message: "도와줘요 쌤 공고가 없습니다." });
-    } else {
-      // 응답 데이터 가공
-      const jobData = job.toJSON();
-      jobData.categories =
-        jobData.categories?.map((cat) => ({
-          id: cat.id,
-          name: cat.category_nm,
-          category_cd: cat.category_cd,
-          grp_cd: cat.grp_cd,
-        })) || [];
-
-      return res.json(jobData);
     }
 
-    if (!job) {
-      return res.status(404).json({ message: "도와줘요 쌤 공고가 없습니다." });
-    } else {
-      return res.json(job);
-    }
+    // 카테고리 정보를 별도로 조회
+    const categories = await Category.findAll({
+      include: [
+        {
+          model: TutorJobCategory,
+          where: { tutor_job_id: req.params.id },
+          attributes: [],
+        },
+      ],
+      attributes: ["id", "category_nm", "category_cd", "grp_cd"],
+    });
+
+    const jobData = job.toJSON();
+    jobData.categories = categories.map((cat) => ({
+      id: cat.id,
+      name: cat.category_nm,
+      category_cd: cat.category_cd,
+      grp_cd: cat.grp_cd,
+    }));
+
+    return res.json(jobData);
   } catch (err) {
+    console.error("getTutorJobById 에러:", err);
     res.status(500).json({ error: err.message });
   }
 };
