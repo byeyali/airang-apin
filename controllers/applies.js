@@ -27,6 +27,19 @@ const createJobApply = async (req, res) => {
         message: "등록된 쌤이 아닙니다. 쌤 정보를 등록후에 지원해 주세요.",
       });
     }
+
+    const existingApply = await TutorApply.findOne({
+      where: {
+        tutor_id: tutorId,
+        tutor_job_id: tutor_job_id,
+      },
+    });
+    if (existingApply) {
+      return res.status(400).json({
+        message: "이미 지원한 공고입니다.",
+      });
+    }
+
     const newTutorApply = await TutorApply.create({
       tutor_id: tutorId,
       tutor_job_id: tutor_job_id,
