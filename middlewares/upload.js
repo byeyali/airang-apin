@@ -41,7 +41,6 @@ const azureStorage = new MulterAzureStorage({
   // SAS 토큰 설정 추가
   sasOptions: {
     startsOn: new Date(), // 현재 시간으로 설정 (중요!)
-    expiresOn: new Date(new Date().valueOf() + 24 * 60 * 60 * 1000), // 24시간 후 만료
     permissions: "r", // 읽기 권한만
   },
 });
