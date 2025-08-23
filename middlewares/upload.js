@@ -38,11 +38,6 @@ const azureStorage = new MulterAzureStorage({
   },
   contentType: (req, file) => file.mimetype,
   metadata: (req, file) => ({ fieldName: file.fieldname }),
-  // SAS 토큰 설정 추가
-  sasOptions: {
-    startsOn: new Date(), // 현재 시간으로 설정 (중요!)
-    permissions: "r", // 읽기 권한만
-  },
 });
 
 // multer 인스턴스 생성
