@@ -149,6 +149,76 @@ const getJobApply = async (req, res) => {
   }
 };
 
+const getJobApplyMessage = async (req, res) => {
+  try {
+    const { member_id, job_id } = req.query;
+    const currentMemberId = req.member.id;
+
+    const tutorJob = await TutorJob.findOne({
+      where: {
+        id: job_id,
+      },
+    });
+
+    if (!tutorJob) {
+      return res.status(404).json({
+        success: false,
+        message: "해당 공고를 찾을 수 없거나 접근 권한이 없습니다.",
+      });
+    }
+
+    // member_id로 tutor_id 조회
+    const tutor = await Tutor.findOne({
+      where: {
+        member_id: member_id,
+      },
+      attributes: ["id"],
+    });
+
+    if (!tutor) {
+      return res.status(404).json({
+        success: false,
+        message: "해당 선생님 정보를 찾을 수 없습니다.",
+      });
+    }
+
+    // 매칭 요청 메시지 조회 (최신의 마지막 메시지만 반환)
+    const matchingMessage = await TutorApply.findOne({
+      where: {
+        tutor_id: tutor.id,
+        tutor_job_id: job_id,
+      },
+      attributes: ["id", "message", "apply_status", "created_at"],
+      include: [
+        {
+          model: Tutor,
+          as: "Tutor",
+          attributes: ["name"],
+        },
+      ],
+      order: [["created_at", "DESC"]], // 최신순으로 정렬하여 마지막 메시지 반환
+    });
+
+    if (!matchingMessage) {
+      return res.status(404).json({
+        success: false,
+        message: "해당 매칭 요청 메시지를 찾을 수 없습니다.",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: matchingMessage,
+    });
+  } catch (error) {
+    console.error("매칭 요청 메시지 조회 오류:", error);
+    res.status(500).json({
+      success: false,
+      message: "매칭 요청 메시지를 조회하는 중 오류가 발생했습니다.",
+    });
+  }
+};
+
 const updateJobApply = async (req, res) => {
   try {
     const id = req.params.id;
@@ -239,6 +309,7 @@ const createContract = async (req, res) => {
 module.exports = {
   createJobApply,
   getJobApply,
+  getJobApplyMessage,
   updateJobApply,
   createContract,
 };

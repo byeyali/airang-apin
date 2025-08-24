@@ -5,6 +5,11 @@ const applyController = require("../controllers/applies");
 
 router.post("/", authorization, applyController.createJobApply);
 router.get("/:jobId/apply", authorization, applyController.getJobApply);
+router.get(
+  "/:jobId/apply-message",
+  authorization,
+  applyController.getJobApplyMessage
+);
 router.put("/:id", authorization, applyController.updateJobApply);
 router.post("/:id", authorization, applyController.createContract);
 
