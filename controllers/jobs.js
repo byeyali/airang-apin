@@ -91,18 +91,47 @@ const getTutorJobList = async (req, res) => {
     if (memberType === "parents") {
       whereCondition.requester_id = memberId;
     } else if (memberType === "tutor") {
-      // 선생님의 경우 지역 기반 필터링
       try {
-        // 먼저 선생님의 지역 정보를 조회
+        // 1단계: member_id로 Tutor 테이블에서 tutor_id 찾기
+        const tutor = await Tutor.findOne({
+          where: { member_id: memberId },
+        });
+
+        if (!tutor) {
+          // 선생님 프로필이 없는 경우
+          return res.json({
+            success: true,
+            data: [],
+            pagination: {
+              currentPage: parseInt(page),
+              totalPages: 0,
+              totalCount: 0,
+              limit: parseInt(limit),
+              hasNextPage: false,
+              hasPrevPage: false,
+            },
+            filters: {
+              status,
+              startDate,
+              endDate,
+              categoryId,
+              searchKeyword,
+              sortBy,
+              sortOrder,
+            },
+            message:
+              "쌤 프로필이 등록되지 않았습니다. 쌤 프로필을 먼저 등록해주세요.",
+          });
+        }
+
+        // 2단계: tutor_id로 TutorRegion에서 지역 정보 조회
         const tutorRegions = await TutorRegion.findAll({
-          where: { tutor_id: memberId },
+          where: { tutor_id: tutor.id },
           attributes: ["region_name"],
         });
 
-        console.log("조회된 선생님 지역:", tutorRegions);
-
         if (tutorRegions.length === 0) {
-          // 선생님이 지역을 등록하지 않은 경우 빈 결과 반환
+          // 선생님이 지역을 등록하지 않은 경우
           return res.json({
             success: true,
             data: [],
@@ -130,9 +159,8 @@ const getTutorJobList = async (req, res) => {
 
         // 선생님이 등록한 지역들
         const regionNames = tutorRegions.map((region) => region.region_name);
-        console.log("선생님 지역명 목록:", regionNames);
 
-        // 기본 조건 설정 - Op 사용
+        // 기본 조건 설정
         whereCondition = {
           $or: [
             { status: "open" },
@@ -143,11 +171,6 @@ const getTutorJobList = async (req, res) => {
             $in: regionNames,
           },
         };
-
-        console.log(
-          "설정된 whereCondition:",
-          JSON.stringify(whereCondition, null, 2)
-        );
       } catch (regionError) {
         console.error("선생님 지역 정보 조회 오류:", regionError);
         return res.status(500).json({
