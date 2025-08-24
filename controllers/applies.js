@@ -151,76 +151,6 @@ const getJobApply = async (req, res) => {
   }
 };
 
-const getJobApplyMessage = async (req, res) => {
-  try {
-    const { member_id, job_id } = req.query;
-    const currentMemberId = req.member.id;
-
-    const tutorJob = await TutorJob.findOne({
-      where: {
-        id: job_id,
-      },
-    });
-
-    if (!tutorJob) {
-      return res.status(404).json({
-        success: false,
-        message: "해당 공고를 찾을 수 없거나 접근 권한이 없습니다.",
-      });
-    }
-
-    // member_id로 tutor_id 조회
-    const tutor = await Tutor.findOne({
-      where: {
-        member_id: member_id,
-      },
-      attributes: ["id"],
-    });
-
-    if (!tutor) {
-      return res.status(404).json({
-        success: false,
-        message: "해당 선생님 정보를 찾을 수 없습니다.",
-      });
-    }
-
-    // 매칭 요청 메시지 조회 (최신의 마지막 메시지만 반환)
-    const matchingMessage = await TutorApply.findOne({
-      where: {
-        tutor_id: tutor.id,
-        tutor_job_id: job_id,
-      },
-      attributes: ["id", "message", "apply_status", "created_at"],
-      include: [
-        {
-          model: Tutor,
-          as: "Tutor",
-          attributes: ["name"],
-        },
-      ],
-      order: [["created_at", "DESC"]], // 최신순으로 정렬하여 마지막 메시지 반환
-    });
-
-    if (!matchingMessage) {
-      return res.status(404).json({
-        success: false,
-        message: "해당 매칭 요청 메시지를 찾을 수 없습니다.",
-      });
-    }
-
-    res.json({
-      success: true,
-      data: matchingMessage,
-    });
-  } catch (error) {
-    console.error("매칭 요청 메시지 조회 오류:", error);
-    res.status(500).json({
-      success: false,
-      message: "매칭 요청 메시지를 조회하는 중 오류가 발생했습니다.",
-    });
-  }
-};
-
 const updateJobApply = async (req, res) => {
   try {
     const id = req.params.id;
@@ -258,121 +188,6 @@ const updateJobApply = async (req, res) => {
     res.status(200).json(updatedApply);
   } catch (err) {
     res.status(500).json({ error: err.message });
-  }
-};
-
-const updateApplyStatus = async (req, res) => {
-  try {
-    const jobId = req.params.jobId;
-    const applyId = req.params.id;
-    const loginId = req.member.id; // 로그인한 사용자 ID
-    const { status } = req.body;
-
-    // 1. 공고 데이터 존재여부 확인 - tb_tutor_job.id and status === "open"
-    const tutorJob = await TutorJob.findOne({
-      where: {
-        id: jobId,
-        status: "open",
-      },
-    });
-
-    if (!tutorJob) {
-      return res.status(404).json({
-        success: false,
-        message: "해당 공고를 찾을 수 없거나 모집 상태가 아닙니다.",
-      });
-    }
-
-    // 3. 지원 데이터 존재여부 확인 - tb_tutor_apply.id and status === "accept"
-    const tutorApply = await TutorApply.findOne({
-      where: {
-        id: applyId,
-        tutor_job_id: jobId,
-        apply_status: "accept",
-      },
-    });
-
-    if (!tutorApply) {
-      return res.status(404).json({
-        success: false,
-        message: "해당 내역을 찾을 수 없거나 이미 처리된 신청입니다.",
-      });
-    }
-    // 4. 권한 확인
-    // accept/reject: 공고 작성자만 가능
-    // confirm: 신청자만 가능
-    if (status === "confirm") {
-      // 신청자의 member_id를 찾기 위해 Tutor 테이블 조회
-      const tutor = await Tutor.findOne({
-        where: { id: tutorApply.tutor_id },
-      });
-
-      if (!tutor || tutor.member_id !== loginId) {
-        return res.status(403).json({
-          success: false,
-          message: "해당 신청의 신청자만 계약을 진행할 수 있습니다.",
-        });
-      }
-    } else {
-      if (tutorJob.requester_id !== loginId) {
-        return res.status(403).json({
-          success: false,
-          message: "해당 공고의 작성자만 신청 상태를 변경할 수 있습니다.",
-        });
-      }
-    }
-
-    // 5. tb_tutor_apply status 변경
-    await tutorApply.update({
-      apply_status: status,
-    });
-
-    // 6. 만약 confirm인 경우, 공고 상태도 변경
-    if (status === "confirm") {
-      await TutorJob.update(
-        {
-          status: "matched",
-          matched_tutor_id: tutorApply.tutor_id,
-          matched_at: new Date(),
-        },
-        {
-          where: { id: jobId },
-        }
-      );
-
-      await TutorContract.create({
-        apply_id: tutorApply.id,
-        job_id: jobId,
-        member_id: tutorJob.requester_id,
-        contract_title: `${tutorJob.title} 계약`,
-        tutor_job_id: jobId,
-        tutor_id: tutorApply.tutor_id,
-        requester_id: tutorJob.requester_id,
-        contract_status: "write",
-        start_date: tutorJob.start_date,
-        end_date: tutorJob.end_date,
-        payment: tutorJob.payment,
-        payment_cycle: tutorJob.payment_cycle,
-        created_at: new Date(),
-        updated_at: new Date(),
-      });
-    }
-
-    res.json({
-      success: true,
-      message: "신청 상태가 성공적으로 변경되었습니다.",
-      data: {
-        applyId: tutorApply.id,
-        status: status,
-        updatedAt: tutorApply.updated_at,
-      },
-    });
-  } catch (err) {
-    console.error("신청 상태 변경 오류:", err);
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
   }
 };
 
@@ -518,60 +333,126 @@ const getJobApplyMatch = async (req, res) => {
   }
 };
 
-const createContract = async (req, res) => {
-  try {
-    const {
-      apply_id,
-      job_id,
-      tutor_id,
-      member_id,
-      contract_title,
-      contract_terms,
-      contract_status,
-      start_date,
-      end_date,
-      signed_at,
-    } = req.body;
+// const updateApplyStatus = async (req, res) => {
+//   try {
+//     const jobId = req.params.jobId;
+//     const applyId = req.params.id;
+//     const loginId = req.member.id; // 로그인한 사용자 ID
+//     const { status } = req.body;
 
-    // 지원상태 변경
-    const updatedApply = await TutorApply.update(
-      { status: "contract" },
-      { where: { id: apply_id } }
-    );
+//     // 1. 공고 데이터 존재여부 확인 - tb_tutor_job.id and status === "open"
+//     const tutorJob = await TutorJob.findOne({
+//       where: {
+//         id: jobId,
+//         status: "open",
+//       },
+//     });
 
-    // 공고 데이터 변경
-    const updatedJob = await TutorJob.update(
-      { matched_tutor_id: tutor_id, status: "closed" },
-      { where: { id: job_id } }
-    );
+//     if (!tutorJob) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "해당 공고를 찾을 수 없거나 모집 상태가 아닙니다.",
+//       });
+//     }
 
-    // 계약 데이터 생성
-    const newContract = await TutorContract.create({
-      apply_id: apply_id,
-      job_id: job_id, // 보호자
-      tutor_id: tutor_id,
-      member_id: member_id,
-      contract_title: contract_title,
-      contract_terms: contract_terms,
-      contract_status: contract_status,
-      start_date: start_date,
-      end_date: end_date,
-      signed_at: signed_at,
-    });
+//     // 3. 지원 데이터 존재여부 확인 - tb_tutor_apply.id and status === "accept"
+//     const tutorApply = await TutorApply.findOne({
+//       where: {
+//         id: applyId,
+//         tutor_job_id: jobId,
+//         apply_status: "accept",
+//       },
+//     });
 
-    res.status(201).json(newContract);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+//     if (!tutorApply) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "해당 내역을 찾을 수 없거나 이미 처리된 신청입니다.",
+//       });
+//     }
+//     // 4. 권한 확인
+//     // accept/reject: 공고 작성자만 가능
+//     // confirm: 신청자만 가능
+//     if (status === "confirm") {
+//       // 신청자의 member_id를 찾기 위해 Tutor 테이블 조회
+//       const tutor = await Tutor.findOne({
+//         where: { id: tutorApply.tutor_id },
+//       });
+
+//       if (!tutor || tutor.member_id !== loginId) {
+//         return res.status(403).json({
+//           success: false,
+//           message: "해당 신청의 신청자만 계약을 진행할 수 있습니다.",
+//         });
+//       }
+//     } else {
+//       if (tutorJob.requester_id !== loginId) {
+//         return res.status(403).json({
+//           success: false,
+//           message: "해당 공고의 작성자만 신청 상태를 변경할 수 있습니다.",
+//         });
+//       }
+//     }
+
+//     // 5. tb_tutor_apply status 변경
+//     await tutorApply.update({
+//       apply_status: status,
+//     });
+
+//     // 6. 만약 confirm인 경우, 공고 상태도 변경
+//     if (status === "confirm") {
+//       await TutorJob.update(
+//         {
+//           status: "matched",
+//           matched_tutor_id: tutorApply.tutor_id,
+//           matched_at: new Date(),
+//         },
+//         {
+//           where: { id: jobId },
+//         }
+//       );
+
+//       await TutorContract.create({
+//         apply_id: tutorApply.id,
+//         job_id: jobId,
+//         member_id: tutorJob.requester_id,
+//         contract_title: `${tutorJob.title} 계약`,
+//         tutor_job_id: jobId,
+//         tutor_id: tutorApply.tutor_id,
+//         requester_id: tutorJob.requester_id,
+//         contract_status: "write",
+//         start_date: tutorJob.start_date,
+//         end_date: tutorJob.end_date,
+//         payment: tutorJob.payment,
+//         payment_cycle: tutorJob.payment_cycle,
+//         created_at: new Date(),
+//         updated_at: new Date(),
+//       });
+//     }
+
+//     res.json({
+//       success: true,
+//       message: "신청 상태가 성공적으로 변경되었습니다.",
+//       data: {
+//         applyId: tutorApply.id,
+//         status: status,
+//         updatedAt: tutorApply.updated_at,
+//       },
+//     });
+//   } catch (err) {
+//     console.error("신청 상태 변경 오류:", err);
+//     res.status(500).json({
+//       success: false,
+//       error: err.message,
+//     });
+//   }
+// };
 
 module.exports = {
   createJobApply,
   getJobApply,
-  getJobApplyMessage,
-  updateJobApply,
-  updateApplyStatus,
   updateApplyAccept,
+  updateJobApply,
+  // updateApplyStatus,
   getJobApplyMatch,
-  createContract,
 };
