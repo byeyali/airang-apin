@@ -335,6 +335,20 @@ const updateApplyStatus = async (req, res) => {
           where: { id: jobId },
         }
       );
+
+      // 계약 데이터 생성
+      await TutorContract.create({
+        tutor_job_id: jobId,
+        tutor_id: tutorApply.tutor_id,
+        requester_id: tutorJob.requester_id,
+        contract_status: "active",
+        start_date: tutorJob.start_date,
+        end_date: tutorJob.end_date,
+        payment: tutorJob.payment,
+        payment_cycle: tutorJob.payment_cycle,
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
     }
 
     res.json({
