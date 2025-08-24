@@ -376,6 +376,34 @@ const updateApplyStatus = async (req, res) => {
   }
 };
 
+// 간단한 수락 처리 함수
+const updateApplyAccept = async (req, res) => {
+  try {
+    const applyId = req.params.id;
+
+    // tb_tutor_apply status 변경
+    await TutorApply.update(
+      {
+        apply_status: "accept",
+      },
+      {
+        where: { id: applyId },
+      }
+    );
+
+    res.json({
+      success: true,
+      message: "신청 상태가 성공적으로 변경되었습니다.",
+    });
+  } catch (err) {
+    console.error("신청 상태 변경 오류:", err);
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+};
+
 // TUTOR 공고 매칭내역 조회
 const getJobApplyMatch = async (req, res) => {
   try {
@@ -543,6 +571,7 @@ module.exports = {
   getJobApplyMessage,
   updateJobApply,
   updateApplyStatus,
+  updateApplyAccept,
   getJobApplyMatch,
   createContract,
 };

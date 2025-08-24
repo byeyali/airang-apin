@@ -13,10 +13,6 @@ router.get(
 );
 
 router.put("/:id", authorization, applyController.updateJobApply);
-router.put(
-  "/status/:jobId/:id",
-  authorization,
-  applyController.updateApplyStatus
-);
+router.put("/accept/:id", authorization, applyController.updateApplyAccept);
 
 module.exports = router;
