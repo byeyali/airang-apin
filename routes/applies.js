@@ -4,6 +4,7 @@ const authorization = require("../middlewares/auth"); // auth.js에서 export한
 const applyController = require("../controllers/applies");
 
 router.post("/", authorization, applyController.createJobApply);
+router.get("/match/me", authorization, applyController.getJobApplyMatch);
 router.get("/:jobId/apply", authorization, applyController.getJobApply);
 router.get(
   "/:jobId/apply-message",
@@ -15,7 +16,6 @@ router.put(
   authorization,
   applyController.updateApplyStatus
 );
-router.get("/match/me", authorization, applyController.getJobApplyMatch);
 router.put("/:id", authorization, applyController.updateJobApply);
 router.post("/:id", authorization, applyController.createContract);
 
