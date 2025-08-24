@@ -283,14 +283,6 @@ const updateApplyStatus = async (req, res) => {
       });
     }
 
-    // 2. loginId 공고 데이터 작성자 여부 확인 (tb_tutor_job.requester_id)
-    if (tutorJob.requester_id !== loginId) {
-      return res.status(403).json({
-        success: false,
-        message: "해당 공고의 작성자만 신청 상태를 변경할 수 있습니다.",
-      });
-    }
-
     // 3. 지원 데이터 존재여부 확인 - tb_tutor_apply.id and status === "ready"
     const tutorApply = await TutorApply.findOne({
       where: {
@@ -307,12 +299,31 @@ const updateApplyStatus = async (req, res) => {
       });
     }
 
-    // 4. tb_tutor_apply status 변경 accept
+    // 4. 권한 확인
+    // accept/reject: 공고 작성자만 가능
+    // confirm: 신청자만 가능
+    if (status === "confirm") {
+      if (tutorApply.tutor_id !== loginId) {
+        return res.status(403).json({
+          success: false,
+          message: "해당 신청의 신청자만 계약을 진행할 수 있습니다.",
+        });
+      }
+    } else {
+      if (tutorJob.requester_id !== loginId) {
+        return res.status(403).json({
+          success: false,
+          message: "해당 공고의 작성자만 신청 상태를 변경할 수 있습니다.",
+        });
+      }
+    }
+
+    // 5. tb_tutor_apply status 변경
     await tutorApply.update({
       apply_status: status,
     });
 
-    // 5. 만약 accept인 경우, 공고 상태도 변경
+    // 6. 만약 confirm인 경우, 공고 상태도 변경
     if (status === "confirm") {
       await TutorJob.update(
         {
