@@ -6,6 +6,7 @@ const {
   Member,
   TutorApply,
   TutorContract,
+  TutorJobCategory,
 } = require("../models");
 const { Op } = require("sequelize");
 
