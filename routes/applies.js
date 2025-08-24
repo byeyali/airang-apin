@@ -15,6 +15,7 @@ router.put(
   authorization,
   applyController.updateApplyStatus
 );
+router.get("/match/me", authorization, applyController.getJobApplyMatch);
 router.put("/:id", authorization, applyController.updateJobApply);
 router.post("/:id", authorization, applyController.createContract);
 

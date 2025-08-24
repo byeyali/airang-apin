@@ -342,6 +342,136 @@ const updateApplyStatus = async (req, res) => {
   }
 };
 
+// TUTOR 공고 매칭내역 조회
+const getJobApplyMatch = async (req, res) => {
+  try {
+    const memberId = req.member.id;
+
+    // tb_tutor.member_id 기준으로 id=tutor_id 조회
+    const tutor = await Tutor.findOne({
+      where: { member_id: memberId },
+    });
+
+    if (!tutor) {
+      return res.status(403).json({
+        success: false,
+        message: "등록된 쌤이 아닙니다.",
+      });
+    }
+
+    // tutor_id 기준으로 tb_tutor_apply.status = "accept" 인건 조회
+    const acceptedApplications = await TutorApply.findAll({
+      where: {
+        tutor_id: tutor.id,
+        apply_status: "accept",
+      },
+      include: [
+        {
+          model: TutorJob,
+          as: "TutorJob",
+          include: [
+            {
+              model: Member,
+              as: "Requester",
+              attributes: ["name", "email", "cell_phone"],
+            },
+            {
+              model: TutorJobCategory,
+              as: "TutorJobCategories",
+              include: [
+                {
+                  model: Category,
+                  as: "Category",
+                  attributes: ["category_nm"],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          model: Tutor,
+          as: "Tutor",
+          attributes: [
+            "name",
+            "birth_year",
+            "gender",
+            "school",
+            "major",
+            "is_graduate",
+            "career_years",
+            "introduction",
+          ],
+        },
+      ],
+      order: [["created_at", "DESC"]], // 최신순으로 정렬
+    });
+
+    // 응답 데이터 포맷팅
+    const formattedApplications = acceptedApplications.map((application) => {
+      const categories = application.TutorJob.TutorJobCategories.map(
+        (jobCategory) => jobCategory.Category.category_nm
+      );
+
+      return {
+        id: application.id,
+        jobId: application.tutor_job_id,
+        tutorId: application.tutor_id,
+        applyStatus: application.apply_status,
+        message: application.message,
+        createdAt: application.created_at,
+        updatedAt: application.updated_at,
+
+        // 공고 정보
+        jobTitle: application.TutorJob.title,
+        jobTarget: application.TutorJob.target,
+        jobObjective: application.TutorJob.objective,
+        jobWorkType: application.TutorJob.work_type,
+        jobStartDate: application.TutorJob.start_date,
+        jobEndDate: application.TutorJob.end_date,
+        jobStartTime: application.TutorJob.start_time,
+        jobEndTime: application.TutorJob.end_time,
+        jobWorkDay: application.TutorJob.work_day,
+        jobWorkPlace: application.TutorJob.work_place,
+        jobWorkPlaceAddress: application.TutorJob.work_place_address,
+        jobPayment: application.TutorJob.payment,
+        jobNegotiable: application.TutorJob.negotiable,
+        jobPaymentCycle: application.TutorJob.payment_cycle,
+        jobDescription: application.TutorJob.description,
+        jobEtc: application.TutorJob.etc,
+        jobStatus: application.TutorJob.status,
+        jobCategories: categories,
+
+        // 부모 정보
+        parentName: application.TutorJob.Requester.name,
+        parentEmail: application.TutorJob.Requester.email,
+        parentPhone: application.TutorJob.Requester.cell_phone,
+
+        // 선생님 정보
+        tutorName: application.Tutor.name,
+        tutorBirthYear: application.Tutor.birth_year,
+        tutorGender: application.Tutor.gender,
+        tutorSchool: application.Tutor.school,
+        tutorMajor: application.Tutor.major,
+        tutorIsGraduate: application.Tutor.is_graduate,
+        tutorCareerYears: application.Tutor.career_years,
+        tutorIntroduction: application.Tutor.introduction,
+      };
+    });
+
+    res.json({
+      success: true,
+      data: formattedApplications,
+      totalCount: formattedApplications.length,
+    });
+  } catch (error) {
+    console.error("신청내역 조회 오류:", error);
+    res.status(500).json({
+      success: false,
+      message: "신청내역을 조회하는 중 오류가 발생했습니다.",
+    });
+  }
+};
+
 const createContract = async (req, res) => {
   try {
     const {
@@ -395,5 +525,6 @@ module.exports = {
   getJobApplyMessage,
   updateJobApply,
   updateApplyStatus,
+  getJobApplyMatch,
   createContract,
 };
