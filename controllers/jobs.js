@@ -1,6 +1,12 @@
 const fs = require("fs");
 const { error } = require("console");
-const { TutorJob, Member, TutorJobCategory, Category } = require("../models");
+const {
+  TutorJob,
+  Member,
+  TutorJobCategory,
+  TutorRegion,
+  Category,
+} = require("../models");
 const { Op, Sequelize, DATE } = require("sequelize");
 
 const createTutorJob = async (req, res) => {
