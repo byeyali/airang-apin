@@ -298,7 +298,6 @@ const updateApplyStatus = async (req, res) => {
         message: "해당 내역을 찾을 수 없거나 이미 처리된 신청입니다.",
       });
     }
-
     // 4. 권한 확인
     // accept/reject: 공고 작성자만 가능
     // confirm: 신청자만 가능
@@ -341,8 +340,11 @@ const updateApplyStatus = async (req, res) => {
         }
       );
 
-      // 계약 데이터 생성
       await TutorContract.create({
+        apply_id: tutorApply.id,
+        job_id: jobId,
+        member_id: tutorJob.requester_id,
+        contract_title: `${tutorJob.title} 계약`,
         tutor_job_id: jobId,
         tutor_id: tutorApply.tutor_id,
         requester_id: tutorJob.requester_id,
