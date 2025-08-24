@@ -99,6 +99,8 @@ const getTutorJobList = async (req, res) => {
           attributes: ["region_name"],
         });
 
+        console.log("조회된 선생님 지역:", tutorRegions);
+
         if (tutorRegions.length === 0) {
           // 선생님이 지역을 등록하지 않은 경우 빈 결과 반환
           return res.json({
@@ -128,8 +130,9 @@ const getTutorJobList = async (req, res) => {
 
         // 선생님이 등록한 지역들
         const regionNames = tutorRegions.map((region) => region.region_name);
+        console.log("선생님 지역명 목록:", regionNames);
 
-        // 기본 조건 설정
+        // 기본 조건 설정 - Op 사용
         whereCondition = {
           $or: [
             { status: "open" },
@@ -140,6 +143,11 @@ const getTutorJobList = async (req, res) => {
             $in: regionNames,
           },
         };
+
+        console.log(
+          "설정된 whereCondition:",
+          JSON.stringify(whereCondition, null, 2)
+        );
       } catch (regionError) {
         console.error("선생님 지역 정보 조회 오류:", regionError);
         return res.status(500).json({
@@ -194,6 +202,11 @@ const getTutorJobList = async (req, res) => {
       }
     }
 
+    console.log(
+      "최종 whereCondition:",
+      JSON.stringify(whereCondition, null, 2)
+    );
+
     // 정렬 조건
     const orderCondition = [[sortBy, sortOrder.toUpperCase()]];
 
@@ -209,6 +222,8 @@ const getTutorJobList = async (req, res) => {
       },
     ];
 
+    console.log("TutorJob 조회 시작...");
+
     // 데이터 조회 (카테고리 정보 제외)
     const { count, rows: jobList } = await TutorJob.findAndCountAll({
       where: whereCondition,
@@ -217,6 +232,16 @@ const getTutorJobList = async (req, res) => {
       limit: parseInt(limit),
       offset: parseInt(offset),
     });
+
+    console.log("조회된 공고 수:", count);
+    console.log(
+      "공고 목록:",
+      jobList.map((job) => ({
+        id: job.id,
+        work_place: job.work_place,
+        status: job.status,
+      }))
+    );
 
     // 응답 데이터 가공
     const processedJobList = jobList.map((job) => {
