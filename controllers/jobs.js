@@ -170,8 +170,8 @@ const getTutorJobList = async (req, res) => {
         whereCondition = {
           [Op.or]: [
             { status: "open" },
-            { matched_tutor_id: memberId },
-            { preferred_tutor_id: memberId },
+            { matched_tutor_id: tutor.id },
+            { preferred_tutor_id: tutor.id },
           ],
         };
 
