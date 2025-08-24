@@ -14,7 +14,7 @@ router.get(
 
 router.put("/:id", authorization, applyController.updateJobApply);
 router.put(
-  "/status/:jobId/:id/",
+  "/status/:jobId/:id",
   authorization,
   applyController.updateApplyStatus
 );
