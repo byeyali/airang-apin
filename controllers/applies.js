@@ -303,7 +303,12 @@ const updateApplyStatus = async (req, res) => {
     // accept/reject: 공고 작성자만 가능
     // confirm: 신청자만 가능
     if (status === "confirm") {
-      if (tutorApply.tutor_id !== loginId) {
+      // 신청자의 member_id를 찾기 위해 Tutor 테이블 조회
+      const tutor = await Tutor.findOne({
+        where: { id: tutorApply.tutor_id },
+      });
+
+      if (!tutor || tutor.member_id !== loginId) {
         return res.status(403).json({
           success: false,
           message: "해당 신청의 신청자만 계약을 진행할 수 있습니다.",
