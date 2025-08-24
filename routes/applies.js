@@ -11,12 +11,13 @@ router.get(
   authorization,
   applyController.getJobApplyMessage
 );
+
+router.put("/:id", authorization, applyController.updateJobApply);
 router.put(
   "/:jobId/:id/status",
   authorization,
   applyController.updateApplyStatus
 );
-router.put("/:id", authorization, applyController.updateJobApply);
 router.post("/:id", authorization, applyController.createContract);
 
 module.exports = router;
