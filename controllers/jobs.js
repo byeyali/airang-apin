@@ -3,6 +3,7 @@ const { error } = require("console");
 const {
   TutorJob,
   Member,
+  Tutor,
   TutorJobCategory,
   TutorRegion,
   Category,
