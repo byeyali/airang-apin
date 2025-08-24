@@ -374,7 +374,7 @@ const getJobApplyMatch = async (req, res) => {
           include: [
             {
               model: Member,
-              as: "Requester",
+              as: "requester",
               attributes: ["name", "email", "cell_phone"],
             },
             {
@@ -444,9 +444,9 @@ const getJobApplyMatch = async (req, res) => {
         jobCategories: categories,
 
         // 부모 정보
-        parentName: application.TutorJob.Requester.name,
-        parentEmail: application.TutorJob.Requester.email,
-        parentPhone: application.TutorJob.Requester.cell_phone,
+        parentName: application.TutorJob.requester.name,
+        parentEmail: application.TutorJob.requester.email,
+        parentPhone: application.TutorJob.requester.cell_phone,
 
         // 선생님 정보
         tutorName: application.Tutor.name,
