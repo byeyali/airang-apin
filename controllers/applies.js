@@ -11,7 +11,7 @@ const { Op } = require("sequelize");
 
 const createJobApply = async (req, res) => {
   try {
-    const tutorId = req.member.id;
+    const memberId = req.member.id; // Member 테이블의 ID
     const { tutor_job_id, message } = req.body;
 
     // 공고가 있는지 확인
@@ -27,8 +27,10 @@ const createJobApply = async (req, res) => {
       });
     }
 
-    // 튜터 체크
-    const tutor = await Tutor.findByPk(tutorId);
+    // 튜터 체크 - member_id로 조회 (수정된 부분)
+    const tutor = await Tutor.findOne({
+      where: { member_id: memberId },
+    });
     if (!tutor) {
       return res.status(403).json({
         message: "등록된 쌤이 아닙니다. 쌤 정보를 등록후에 지원해 주세요.",
@@ -37,7 +39,7 @@ const createJobApply = async (req, res) => {
 
     const existingApply = await TutorApply.findOne({
       where: {
-        tutor_id: tutorId,
+        tutor_id: tutor.id, // tutor.id 사용 (Tutor 테이블의 ID)
         tutor_job_id: tutor_job_id,
       },
     });
@@ -48,13 +50,15 @@ const createJobApply = async (req, res) => {
     }
 
     const newTutorApply = await TutorApply.create({
-      tutor_id: tutorId,
+      tutor_id: tutor.id, // tutor.id 사용 (Tutor 테이블의 ID)
       tutor_job_id: tutor_job_id,
       message: message,
+      apply_status: "ready", // 상태 추가
     });
 
     res.status(201).json(newTutorApply);
   } catch (err) {
+    console.error("createJobApply 오류:", err);
     res.status(500).json({ error: err.message });
   }
 };
