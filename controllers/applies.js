@@ -283,19 +283,19 @@ const updateApplyStatus = async (req, res) => {
       });
     }
 
-    // 3. 지원 데이터 존재여부 확인 - tb_tutor_apply.id and status === "ready"
+    // 3. 지원 데이터 존재여부 확인 - tb_tutor_apply.id and status === "accept"
     const tutorApply = await TutorApply.findOne({
       where: {
         id: applyId,
         tutor_job_id: jobId,
-        apply_status: "ready",
+        apply_status: "accept",
       },
     });
 
     if (!tutorApply) {
       return res.status(404).json({
         success: false,
-        message: "해당 신청내역을 찾을 수 없거나 이미 처리된 신청입니다.",
+        message: "해당 내역을 찾을 수 없거나 이미 처리된 신청입니다.",
       });
     }
 
@@ -341,7 +341,7 @@ const updateApplyStatus = async (req, res) => {
         tutor_job_id: jobId,
         tutor_id: tutorApply.tutor_id,
         requester_id: tutorJob.requester_id,
-        contract_status: "active",
+        contract_status: "write",
         start_date: tutorJob.start_date,
         end_date: tutorJob.end_date,
         payment: tutorJob.payment,
