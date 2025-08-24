@@ -57,10 +57,6 @@ const createTutorJob = async (req, res) => {
   }
 };
 
-// controllers/jobs.js 파일 상단에 추가
-const { Op } = require("sequelize");
-const { TutorJob, Member, Tutor, TutorRegion } = require("../models");
-
 const getTutorJobList = async (req, res) => {
   try {
     // 쿼리 파라미터에서 member_id와 member_type 추출
