@@ -18,6 +18,5 @@ router.put(
   authorization,
   applyController.updateApplyStatus
 );
-router.post("/:id", authorization, applyController.createContract);
 
 module.exports = router;
