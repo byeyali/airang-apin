@@ -100,6 +100,7 @@ const getTutorJobList = async (req, res) => {
         // 1단계: member_id로 Tutor 테이블에서 tutor_id 찾기
         const tutor = await Tutor.findOne({
           where: { member_id: memberId },
+          attributes: ["id"], // tutor_id만 가져오기
         });
 
         if (!tutor) {
@@ -107,23 +108,6 @@ const getTutorJobList = async (req, res) => {
           return res.json({
             success: true,
             data: [],
-            pagination: {
-              currentPage: parseInt(page),
-              totalPages: 0,
-              totalCount: 0,
-              limit: parseInt(limit),
-              hasNextPage: false,
-              hasPrevPage: false,
-            },
-            filters: {
-              status,
-              startDate,
-              endDate,
-              categoryId,
-              searchKeyword,
-              sortBy,
-              sortOrder,
-            },
             message:
               "쌤 프로필이 등록되지 않았습니다. 쌤 프로필을 먼저 등록해주세요.",
           });
@@ -140,23 +124,6 @@ const getTutorJobList = async (req, res) => {
           return res.json({
             success: true,
             data: [],
-            pagination: {
-              currentPage: parseInt(page),
-              totalPages: 0,
-              totalCount: 0,
-              limit: parseInt(limit),
-              hasNextPage: false,
-              hasPrevPage: false,
-            },
-            filters: {
-              status,
-              startDate,
-              endDate,
-              categoryId,
-              searchKeyword,
-              sortBy,
-              sortOrder,
-            },
             message:
               "등록된 지역이 없습니다. 쌤 프로필에서 활동 가능 지역을 등록해주세요.",
           });
@@ -164,7 +131,10 @@ const getTutorJobList = async (req, res) => {
 
         // 선생님이 등록한 지역들
         const regionNames = tutorRegions.map((region) => region.region_name);
-        console.log("선생님 지역명 목록:", regionNames);
+        console.log(
+          "=========================선생님 지역명 목록:",
+          regionNames
+        );
 
         // 기본 조건 설정 (Op 사용)
         whereCondition = {
