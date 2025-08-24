@@ -86,30 +86,69 @@ const getTutorJobList = async (req, res) => {
       whereCondition.requester_id = memberId;
     } else if (memberType === "tutor") {
       // 선생님의 경우 지역 기반 필터링
-      whereCondition[Op.or] = [
-        { status: "open" },
-        { matched_tutor_id: memberId },
-        { preferred_tutor_id: memberId },
-      ];
+      try {
+        // 먼저 선생님의 지역 정보를 조회
+        const tutorRegions = await TutorRegion.findAll({
+          where: { tutor_id: memberId },
+          attributes: ["region_name"],
+        });
 
-      // work_place 컬럼만 사용한 지역 필터링
-      // work_place IN (SELECT region_name FROM tb_tutor_region WHERE tutor_id = :memberId)
-      whereCondition.work_place = {
-        [Op.in]: Sequelize.literal(`(
-          SELECT region_name 
-          FROM tb_tutor_region 
-          WHERE tutor_id = ${memberId}
-        )`),
-      };
+        if (tutorRegions.length === 0) {
+          // 선생님이 지역을 등록하지 않은 경우 빈 결과 반환
+          return res.json({
+            success: true,
+            data: [],
+            pagination: {
+              currentPage: parseInt(page),
+              totalPages: 0,
+              totalCount: 0,
+              limit: parseInt(limit),
+              hasNextPage: false,
+              hasPrevPage: false,
+            },
+            filters: {
+              status,
+              startDate,
+              endDate,
+              categoryId,
+              searchKeyword,
+              sortBy,
+              sortOrder,
+            },
+            message:
+              "등록된 지역이 없습니다. 쌤 프로필에서 활동 가능 지역을 등록해주세요.",
+          });
+        }
+
+        // 선생님이 등록한 지역들
+        const regionNames = tutorRegions.map((region) => region.region_name);
+
+        // 기본 조건 설정
+        whereCondition = {
+          $or: [
+            { status: "open" },
+            { matched_tutor_id: memberId },
+            { preferred_tutor_id: memberId },
+          ],
+          work_place: {
+            $in: regionNames,
+          },
+        };
+      } catch (regionError) {
+        console.error("선생님 지역 정보 조회 오류:", regionError);
+        return res.status(500).json({
+          error: "선생님 지역 정보 조회 중 오류가 발생했습니다.",
+        });
+      }
     }
     // admin은 전체 공고를 볼 수 있도록 whereCondition을 빈 객체로 유지
 
     // 추가 필터 조건
     if (status) {
-      if (memberType === "tutor" && whereCondition[Op.or]) {
+      if (memberType === "tutor" && whereCondition.$or) {
         // tutor의 경우 status가 "open"인 경우만 필터링
         if (status !== "open") {
-          whereCondition[Op.or] = whereCondition[Op.or].filter(
+          whereCondition.$or = whereCondition.$or.filter(
             (condition) => !condition.status || condition.status === status
           );
         }
@@ -120,29 +159,29 @@ const getTutorJobList = async (req, res) => {
 
     if (startDate && endDate) {
       whereCondition.created_at = {
-        [Op.between]: [new Date(startDate), new Date(endDate)],
+        $between: [new Date(startDate), new Date(endDate)],
       };
     } else if (startDate) {
       whereCondition.created_at = {
-        [Op.gte]: new Date(startDate),
+        $gte: new Date(startDate),
       };
     } else if (endDate) {
       whereCondition.created_at = {
-        [Op.lte]: new Date(endDate),
+        $lte: new Date(endDate),
       };
     }
 
     if (searchKeyword) {
       const searchCondition = {
-        [Op.or]: [
-          { title: { [Op.like]: `%${searchKeyword}%` } },
-          { description: { [Op.like]: `%${searchKeyword}%` } },
+        $or: [
+          { title: { $like: `%${searchKeyword}%` } },
+          { description: { $like: `%${searchKeyword}%` } },
         ],
       };
 
       if (Object.keys(whereCondition).length > 0) {
         whereCondition = {
-          [Op.and]: [whereCondition, searchCondition],
+          $and: [whereCondition, searchCondition],
         };
       } else {
         whereCondition = searchCondition;
