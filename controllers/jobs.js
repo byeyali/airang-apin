@@ -1,7 +1,7 @@
 const fs = require("fs");
 const { error } = require("console");
 const { TutorJob, Member, TutorJobCategory, Category } = require("../models");
-const { Op, DATE } = require("sequelize");
+const { Op, Sequelize, DATE } = require("sequelize");
 
 const createTutorJob = async (req, res) => {
   try {
