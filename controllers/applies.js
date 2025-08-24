@@ -4,6 +4,7 @@ const {
   TutorJob,
   Tutor,
   Member,
+  Category,
   TutorApply,
   TutorContract,
   TutorJobCategory,
