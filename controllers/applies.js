@@ -377,17 +377,6 @@ const getJobApplyMatch = async (req, res) => {
               as: "requester",
               attributes: ["name", "email", "cell_phone"],
             },
-            {
-              model: TutorJobCategory,
-              as: "TutorJobCategories",
-              include: [
-                {
-                  model: Category,
-                  as: "Category",
-                  attributes: ["category_nm"],
-                },
-              ],
-            },
           ],
         },
         {
@@ -410,10 +399,6 @@ const getJobApplyMatch = async (req, res) => {
 
     // 응답 데이터 포맷팅
     const formattedApplications = acceptedApplications.map((application) => {
-      const categories = application.TutorJob.TutorJobCategories.map(
-        (jobCategory) => jobCategory.Category.category_nm
-      );
-
       return {
         id: application.id,
         jobId: application.tutor_job_id,
@@ -441,7 +426,6 @@ const getJobApplyMatch = async (req, res) => {
         jobDescription: application.TutorJob.description,
         jobEtc: application.TutorJob.etc,
         jobStatus: application.TutorJob.status,
-        jobCategories: categories,
 
         // 부모 정보
         parentName: application.TutorJob.requester.name,
@@ -466,10 +450,10 @@ const getJobApplyMatch = async (req, res) => {
       totalCount: formattedApplications.length,
     });
   } catch (error) {
-    console.error("신청내역 조회 오류:", error);
+    console.error("매칭내역 조회 오류:", error);
     res.status(500).json({
       success: false,
-      message: "신청내역을 조회하는 중 오류가 발생했습니다.",
+      message: "매칭내역을 조회하는 중 오류가 발생했습니다.",
     });
   }
 };
