@@ -57,6 +57,10 @@ const createTutorJob = async (req, res) => {
   }
 };
 
+// controllers/jobs.js 파일 상단에 추가
+const { Op } = require("sequelize");
+const { TutorJob, Member, Tutor, TutorRegion } = require("../models");
+
 const getTutorJobList = async (req, res) => {
   try {
     // 쿼리 파라미터에서 member_id와 member_type 추출
@@ -160,18 +164,23 @@ const getTutorJobList = async (req, res) => {
 
         // 선생님이 등록한 지역들
         const regionNames = tutorRegions.map((region) => region.region_name);
+        console.log("선생님 지역명 목록:", regionNames);
 
-        // 기본 조건 설정
+        // 기본 조건 설정 (Op 사용)
         whereCondition = {
-          $or: [
+          [Op.or]: [
             { status: "open" },
             { matched_tutor_id: memberId },
             { preferred_tutor_id: memberId },
           ],
-          work_place: {
-            $in: regionNames,
-          },
         };
+
+        // work_place 조건을 별도로 추가
+        if (regionNames.length > 0) {
+          whereCondition.work_place = {
+            [Op.in]: regionNames,
+          };
+        }
       } catch (regionError) {
         console.error("선생님 지역 정보 조회 오류:", regionError);
         return res.status(500).json({
@@ -183,10 +192,10 @@ const getTutorJobList = async (req, res) => {
 
     // 추가 필터 조건
     if (status) {
-      if (memberType === "tutor" && whereCondition.$or) {
+      if (memberType === "tutor" && whereCondition[Op.or]) {
         // tutor의 경우 status가 "open"인 경우만 필터링
         if (status !== "open") {
-          whereCondition.$or = whereCondition.$or.filter(
+          whereCondition[Op.or] = whereCondition[Op.or].filter(
             (condition) => !condition.status || condition.status === status
           );
         }
@@ -197,29 +206,29 @@ const getTutorJobList = async (req, res) => {
 
     if (startDate && endDate) {
       whereCondition.created_at = {
-        $between: [new Date(startDate), new Date(endDate)],
+        [Op.between]: [new Date(startDate), new Date(endDate)],
       };
     } else if (startDate) {
       whereCondition.created_at = {
-        $gte: new Date(startDate),
+        [Op.gte]: new Date(startDate),
       };
     } else if (endDate) {
       whereCondition.created_at = {
-        $lte: new Date(endDate),
+        [Op.lte]: new Date(endDate),
       };
     }
 
     if (searchKeyword) {
       const searchCondition = {
-        $or: [
-          { title: { $like: `%${searchKeyword}%` } },
-          { description: { $like: `%${searchKeyword}%` } },
+        [Op.or]: [
+          { title: { [Op.like]: `%${searchKeyword}%` } },
+          { description: { [Op.like]: `%${searchKeyword}%` } },
         ],
       };
 
       if (Object.keys(whereCondition).length > 0) {
         whereCondition = {
-          $and: [whereCondition, searchCondition],
+          [Op.and]: [whereCondition, searchCondition],
         };
       } else {
         whereCondition = searchCondition;
