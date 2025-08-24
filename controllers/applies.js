@@ -7,7 +7,7 @@ const {
   TutorApply,
   TutorContract,
 } = require("../models");
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 
 const createJobApply = async (req, res) => {
   try {
