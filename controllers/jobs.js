@@ -85,17 +85,27 @@ const getTutorJobList = async (req, res) => {
     if (memberType === "parents") {
       whereCondition.requester_id = memberId;
     } else if (memberType === "tutor") {
+      // 선생님의 경우 지역 기반 필터링
       whereCondition[Op.or] = [
         { status: "open" },
         { matched_tutor_id: memberId },
         { preferred_tutor_id: memberId },
       ];
+
+      // work_place 컬럼만 사용한 지역 필터링
+      // work_place IN (SELECT region_name FROM tb_tutor_region WHERE tutor_id = :memberId)
+      whereCondition.work_place = {
+        [Op.in]: Sequelize.literal(`(
+          SELECT region_name 
+          FROM tb_tutor_region 
+          WHERE tutor_id = ${memberId}
+        )`),
+      };
     }
     // admin은 전체 공고를 볼 수 있도록 whereCondition을 빈 객체로 유지
 
     // 추가 필터 조건
     if (status) {
-      // tutor의 경우 Op.or 조건이 있으므로 status 필터를 조정
       if (memberType === "tutor" && whereCondition[Op.or]) {
         // tutor의 경우 status가 "open"인 경우만 필터링
         if (status !== "open") {
@@ -123,7 +133,6 @@ const getTutorJobList = async (req, res) => {
     }
 
     if (searchKeyword) {
-      // 검색 조건을 Op.and로 감싸서 기존 조건과 AND 연산
       const searchCondition = {
         [Op.or]: [
           { title: { [Op.like]: `%${searchKeyword}%` } },
