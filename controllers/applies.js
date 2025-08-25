@@ -169,7 +169,7 @@ const updateJobApply = async (req, res) => {
     }
 
     // 권한 및 상태 체크
-    if (apply.status !== "apply" || apply.tutor_id !== loginId) {
+    if (apply.status !== "ready" || apply.tutor_id !== loginId) {
       return res.status(403).json({
         message: "지원내용을 수정할 수 없습니다.",
       });
@@ -191,27 +191,59 @@ const updateJobApply = async (req, res) => {
   }
 };
 
-// 간단한 수락 처리 함수
-const updateApplyAccept = async (req, res) => {
-  try {
-    const applyId = req.params.id;
+const updateApplyStatus = async (req, res) => {
+  const applyId = req.params.id;
+  const { status } = req.body;
 
-    // tb_tutor_apply status 변경
+  // 상태 메시지 초기화
+  let statusMessage = "";
+
+  try {
+    // status 유효성 검사
+    const allowedStatuses = ["accept", "reject"];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        message:
+          "유효하지 않은 상태값입니다. 'accept' 또는 'reject'만 허용됩니다.",
+      });
+    }
+
+    statusMessage = status === "accept" ? "수락처리" : "거절처리";
+
+    // 지원 내역 확인
+    const apply = await TutorApply.findOne({
+      where: { id: applyId },
+    });
+
+    if (!apply) {
+      return res.status(404).json({
+        message: "지원내역을 찾을 수 없습니다.",
+      });
+    }
+
+    // 공고 확인
+    const job = await TutorJob.findOne({
+      where: { id: apply.tutor_job_id },
+    });
+
+    if (!job) {
+      return res.status(404).json({
+        message: "공고정보를 찾을 수 없습니다.",
+      });
+    }
+
+    // 상태 업데이트
     await TutorApply.update(
-      {
-        apply_status: "accept",
-      },
-      {
-        where: { id: applyId },
-      }
+      { apply_status: status },
+      { where: { id: applyId } }
     );
 
     res.json({
       success: true,
-      message: "신청 상태가 성공적으로 변경되었습니다.",
+      message: `${statusMessage}가 완료되었습니다.`,
     });
   } catch (err) {
-    console.error("신청 상태 변경 오류:", err);
+    console.error(`${statusMessage || "지원 상태 변경"} 오류`, err);
     res.status(500).json({
       success: false,
       error: err.message,
@@ -333,7 +365,7 @@ const getJobApplyMatch = async (req, res) => {
   }
 };
 
-// const updateApplyStatus = async (req, res) => {
+// const updateApplyConfirm = async (req, res) => {
 //   try {
 //     const jobId = req.params.jobId;
 //     const applyId = req.params.id;
@@ -451,8 +483,8 @@ const getJobApplyMatch = async (req, res) => {
 module.exports = {
   createJobApply,
   getJobApply,
-  updateApplyAccept,
+  updateApplyStatus,
   updateJobApply,
-  // updateApplyStatus,
+  // updateApplyConfirm,
   getJobApplyMatch,
 };

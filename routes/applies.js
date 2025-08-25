@@ -3,15 +3,13 @@ const router = express.Router();
 const authorization = require("../middlewares/auth"); // auth.js에서 export한 미들웨어
 const applyController = require("../controllers/applies");
 
-router.post("/", authorization, applyController.createJobApply);
-router.get("/match/me", authorization, applyController.getJobApplyMatch);
-router.get("/:jobId/apply", authorization, applyController.getJobApply);
+router.use(authorization); // 공통 인증 적용
 
-router.put("/:id", authorization, applyController.updateJobApply);
-router.put(
-  "/:jobId/:id/accept",
-  authorization,
-  applyController.updateApplyAccept
-);
+router.post("/", applyController.createJobApply);
+router.get("/match/me", applyController.getJobApplyMatch);
+router.get("/job/:jobId/apply", applyController.getJobApply);
+
+router.patch("/:id", applyController.updateJobApply);
+router.patch("/:id/status", applyController.updateApplyStatus);
 
 module.exports = router;
