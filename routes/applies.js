@@ -9,7 +9,7 @@ router.post("/", applyController.createJobApply);
 router.get("/match/me", applyController.getJobApplyMatch);
 router.get("/job/:jobId/apply", applyController.getJobApply);
 
-router.patch("/:id", applyController.updateJobApply);
-router.patch("/:id/status", applyController.updateApplyStatus);
+router.put("/:id", applyController.updateJobApply);
+router.put("/:id/status", applyController.updateApplyStatus);
 
 module.exports = router;
