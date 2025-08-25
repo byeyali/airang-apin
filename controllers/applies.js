@@ -365,126 +365,120 @@ const getJobApplyMatch = async (req, res) => {
   }
 };
 
-// const updateApplyConfirm = async (req, res) => {
-//   try {
-//     const jobId = req.params.jobId;
-//     const applyId = req.params.id;
-//     const loginId = req.member.id; // 로그인한 사용자 ID
-//     const { status } = req.body;
+const updateApplyConfirm = async (req, res) => {
+  try {
+    const jobId = req.params.jobId;
+    const applyId = req.params.id;
+    const loginId = req.member.id; // 로그인한 사용자 ID
+    const { status } = req.body;
 
-//     // 1. 공고 데이터 존재여부 확인 - tb_tutor_job.id and status === "open"
-//     const tutorJob = await TutorJob.findOne({
-//       where: {
-//         id: jobId,
-//         status: "open",
-//       },
-//     });
+    // 1. 공고 데이터 존재여부 확인 - tb_tutor_job.id and status === "open"
+    const tutorJob = await TutorJob.findOne({
+      where: {
+        id: jobId,
+        status: "open",
+      },
+    });
 
-//     if (!tutorJob) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "해당 공고를 찾을 수 없거나 모집 상태가 아닙니다.",
-//       });
-//     }
+    if (!tutorJob) {
+      return res.status(404).json({
+        success: false,
+        message: "해당 공고를 찾을 수 없거나 모집 상태가 아닙니다.",
+      });
+    }
 
-//     // 3. 지원 데이터 존재여부 확인 - tb_tutor_apply.id and status === "accept"
-//     const tutorApply = await TutorApply.findOne({
-//       where: {
-//         id: applyId,
-//         tutor_job_id: jobId,
-//         apply_status: "accept",
-//       },
-//     });
+    // 2. 지원 데이터 존재여부 확인 - tb_tutor_apply.id and status === "accept"
+    const tutorApply = await TutorApply.findOne({
+      where: {
+        id: applyId,
+        tutor_job_id: jobId,
+        apply_status: "accept",
+      },
+    });
 
-//     if (!tutorApply) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "해당 내역을 찾을 수 없거나 이미 처리된 신청입니다.",
-//       });
-//     }
-//     // 4. 권한 확인
-//     // accept/reject: 공고 작성자만 가능
-//     // confirm: 신청자만 가능
-//     if (status === "confirm") {
-//       // 신청자의 member_id를 찾기 위해 Tutor 테이블 조회
-//       const tutor = await Tutor.findOne({
-//         where: { id: tutorApply.tutor_id },
-//       });
+    if (!tutorApply) {
+      return res.status(404).json({
+        success: false,
+        message: "해당 내역을 찾을 수 없거나 이미 처리된 신청입니다.",
+      });
+    }
 
-//       if (!tutor || tutor.member_id !== loginId) {
-//         return res.status(403).json({
-//           success: false,
-//           message: "해당 신청의 신청자만 계약을 진행할 수 있습니다.",
-//         });
-//       }
-//     } else {
-//       if (tutorJob.requester_id !== loginId) {
-//         return res.status(403).json({
-//           success: false,
-//           message: "해당 공고의 작성자만 신청 상태를 변경할 수 있습니다.",
-//         });
-//       }
-//     }
+    // 3. 권한 확인
+    // confirm: 신청자만 가능
+    if (status === "confirm") {
+      // 신청자의 member_id를 찾기 위해 Tutor 테이블 조회
+      const tutor = await Tutor.findOne({
+        where: { id: tutorApply.tutor_id },
+      });
 
-//     // 5. tb_tutor_apply status 변경
-//     await tutorApply.update({
-//       apply_status: status,
-//     });
+      if (!tutor || tutor.member_id !== loginId) {
+        return res.status(403).json({
+          success: false,
+          message: "해당 신청의 신청자만 계약을 진행할 수 있습니다.",
+        });
+      }
+    }
 
-//     // 6. 만약 confirm인 경우, 공고 상태도 변경
-//     if (status === "confirm") {
-//       await TutorJob.update(
-//         {
-//           status: "matched",
-//           matched_tutor_id: tutorApply.tutor_id,
-//           matched_at: new Date(),
-//         },
-//         {
-//           where: { id: jobId },
-//         }
-//       );
+    // 4. tb_tutor_apply status 변경
+    await tutorApply.update({
+      apply_status: status,
+    });
 
-//       await TutorContract.create({
-//         apply_id: tutorApply.id,
-//         job_id: jobId,
-//         member_id: tutorJob.requester_id,
-//         contract_title: `${tutorJob.title} 계약`,
-//         tutor_job_id: jobId,
-//         tutor_id: tutorApply.tutor_id,
-//         requester_id: tutorJob.requester_id,
-//         contract_status: "write",
-//         start_date: tutorJob.start_date,
-//         end_date: tutorJob.end_date,
-//         payment: tutorJob.payment,
-//         payment_cycle: tutorJob.payment_cycle,
-//         created_at: new Date(),
-//         updated_at: new Date(),
-//       });
-//     }
+    // 5. 공고 상태 변경
+    if (status === "confirm") {
+      await TutorJob.update(
+        {
+          status: "matched",
+          matched_tutor_id: tutorApply.tutor_id,
+          matched_at: new Date(),
+        },
+        {
+          where: { id: jobId },
+        }
+      );
 
-//     res.json({
-//       success: true,
-//       message: "신청 상태가 성공적으로 변경되었습니다.",
-//       data: {
-//         applyId: tutorApply.id,
-//         status: status,
-//         updatedAt: tutorApply.updated_at,
-//       },
-//     });
-//   } catch (err) {
-//     console.error("신청 상태 변경 오류:", err);
-//     res.status(500).json({
-//       success: false,
-//       error: err.message,
-//     });
-//   }
-// };
+      // 계약 생성
+      await TutorContract.create({
+        apply_id: tutorApply.id,
+        job_id: jobId,
+        member_id: tutorJob.requester_id,
+        contract_title: `${tutorJob.title} 계약`,
+        tutor_job_id: jobId,
+        tutor_id: tutorApply.tutor_id,
+        requester_id: tutorJob.requester_id,
+        contract_status: "write",
+        start_date: tutorJob.start_date,
+        end_date: tutorJob.end_date,
+        payment: tutorJob.payment,
+        payment_cycle: tutorJob.payment_cycle,
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "매칭확인이 성공적으로 완료되었습니다.",
+      data: {
+        applyId: tutorApply.id,
+        status: status,
+        updatedAt: tutorApply.updated_at,
+      },
+    });
+  } catch (err) {
+    console.error("신청 상태 변경 오류:", err);
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+};
 
 module.exports = {
   createJobApply,
   getJobApply,
   updateApplyStatus,
   updateJobApply,
-  // updateApplyConfirm,
+  updateApplyConfirm,
   getJobApplyMatch,
 };

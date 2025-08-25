@@ -11,5 +11,10 @@ router.get("/job/:jobId/apply", applyController.getJobApply);
 
 router.put("/:id", applyController.updateJobApply);
 router.put("/:id/status", applyController.updateApplyStatus);
+router.put(
+  "/:jobId/:id/confirm",
+  authorization,
+  applyController.updateApplyConfirm
+);
 
 module.exports = router;
